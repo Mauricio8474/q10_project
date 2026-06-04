@@ -11,3 +11,4 @@ data/processed/*
 *.xlsx
 *.csv
 *.parquet
+venv/
