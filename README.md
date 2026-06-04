@@ -11,16 +11,24 @@ Pipeline ETL que extrae datos académicos desde la **API Q10** (sistema de gesti
 
 ## Instalación
 
+### Windows (PowerShell)
+```powershell
+git clone <repo>
+cd q10_project
+python -m venv venv
+.\venv\Scripts\Activate
+pip install -r requirements.txt
+copy .env.example .env
+# Editar .env con tu Q10_API_KEY
+```
+
+### Linux / macOS (bash)
 ```bash
 git clone <repo>
 cd q10_project
-
-python -m venv venv
-.\venv\Scripts\Activate  # PowerShell (Windows)
-# source venv/bin/activate  # Linux/Mac
-
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
-
 cp .env.example .env
 # Editar .env con tu Q10_API_KEY
 ```
