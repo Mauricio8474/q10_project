@@ -82,6 +82,7 @@ def ejecutar_extraccion_estudiantes():
     guardar_parquet(df, "estudiantes.parquet")
     try:
         df.to_csv("data/raw/estudiantes.csv", index=False, encoding="utf-8-sig")
+        logger.info("CSV guardado: data/raw/estudiantes.csv")
     except PermissionError:
         logger.warning("No se pudo guardar estudiantes.csv (archivo abierto en otro programa)")
 

@@ -66,6 +66,7 @@ def generar_excel_revision():
     logger.info("=== GENERANDO EXCEL PARA REVISIÓN ===")
 
     _parquet_to_excel("cancelados", "data/raw/cancelados.xlsx")
+    _parquet_to_excel("estudiantes", "data/raw/estudiantes.xlsx")
     _parquet_to_excel("inasistencias_agregado", "data/raw/inasistencias_agregado.xlsx")
     _parquet_to_excel("inasistencias_detalle", "data/raw/inasistencias_detalle.xlsx")
 

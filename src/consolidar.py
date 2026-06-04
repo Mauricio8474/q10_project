@@ -76,7 +76,10 @@ def consolidar_notas_cursos(df_notas_pivot=None, df_cursos=None, df_estudiantes=
     Path("data/processed").mkdir(parents=True, exist_ok=True)
 
     path = "data/processed/consolidado_notas"
-    notas.to_csv(f"{path}.csv", index=False, encoding="utf-8-sig")
+    try:
+        notas.to_csv(f"{path}.csv", index=False, encoding="utf-8-sig")
+    except PermissionError:
+        logger.warning("No se pudo guardar %s.csv (archivo abierto en otro programa)", path)
     notas.to_parquet(f"{path}.parquet", index=False)
 
     logger.info("Consolidado notas guardado: %s filas × %s columnas", *notas.shape)
