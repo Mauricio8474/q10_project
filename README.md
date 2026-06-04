@@ -37,6 +37,8 @@ cp .env.example .env
 
 ### CLI
 
+Los comandos son idénticos en ambos sistemas:
+
 ```bash
 # Ejecutar todos los módulos en orden
 python main.py
@@ -54,6 +56,7 @@ python main.py excel         # Genera archivos .xlsx para revisión manual
 ### Análisis exploratorio
 
 ```bash
+# Activar entorno primero (ver Instalación)
 jupyter notebook notebooks/
 ```
 
