@@ -15,8 +15,9 @@ Pipeline ETL que extrae datos académicos desde la **API Q10** (sistema de gesti
 git clone <repo>
 cd q10_project
 
-python -m venv .venv
-source .venv/bin/activate  # o .venv\Scripts\activate en Windows
+python -m venv venv
+.\venv\Scripts\Activate  # PowerShell (Windows)
+# source venv/bin/activate  # Linux/Mac
 
 pip install -r requirements.txt
 
@@ -73,6 +74,7 @@ q10_project/
 │
 ├── notebooks/
 │   ├── analisis_cancelados.ipynb
+│   ├── conteo_estudiantes.ipynb
 │   └── dashboard_informe.ipynb  # (futuro)
 │
 ├── tests/                      # 22 tests unitarios
