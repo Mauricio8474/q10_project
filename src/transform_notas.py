@@ -46,9 +46,6 @@ def transformar_notas(df_raw):
     df_pivot = pd.DataFrame(filas_temp)
 
     df_pivot["Grupo"] = df_pivot["Nombre_curso"].apply(_asignar_grupo)
-    df_pivot["Nombre_curso"] = df_pivot["Nombre_curso"].str.replace(
-        r"\s*\(\w+\)\s*$", "", regex=True
-    )
     df_pivot["Nota final"] = df_pivot.apply(_calcular_nota_final, axis=1)
 
     guardar_parquet(df_pivot, "notas_pivot.parquet")
