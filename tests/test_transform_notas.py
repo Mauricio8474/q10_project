@@ -1,47 +1,48 @@
 import pytest
 
-from src.transform_notas import _es_hoja, _extraer_parametros_hoja
+from src.transform_notas import _extraer_seguimientos
 
 
-class TestEsHoja:
-
-    def test_parametro_sin_padres_es_hoja(self):
-        padres = {100, 200}
-        parametro = {"Consecutivo_parametro": 300}
-        assert _es_hoja(parametro, padres) is True
-
-    def test_parametro_que_es_padre_no_es_hoja(self):
-        padres = {100, 200}
-        parametro = {"Consecutivo_parametro": 100}
-        assert _es_hoja(parametro, padres) is False
-
-
-class TestExtraerParametrosHoja:
+class TestExtraerSeguimientos:
 
     def test_lista_vacia(self):
-        assert _extraer_parametros_hoja([]) == {}
+        assert _extraer_seguimientos([]) == {}
 
     def test_sin_parametros(self):
-        assert _extraer_parametros_hoja(None) == {}
+        assert _extraer_seguimientos(None) == {}
 
-    def test_solo_hojas(self):
+    def test_tres_parametros(self):
         params = [
-            {"Consecutivo_parametro": 1, "Nombre_parametro": "Tarea 1", "Nota": 4.5},
-            {"Consecutivo_parametro": 2, "Nombre_parametro": "Tarea 2", "Nota": 3.0},
+            {"Consecutivo_parametro": 1, "Nombre_parametro": "PRIMER CORTE", "Nota": 4.2},
+            {"Consecutivo_parametro": 2, "Nombre_parametro": "SEGUNDO CORTE", "Nota": 3.6},
+            {"Consecutivo_parametro": 3, "Nombre_parametro": "TERCER CORTE", "Nota": None},
         ]
-        assert _extraer_parametros_hoja(params) == {"Tarea 1": 4.5, "Tarea 2": 3.0}
+        esperado = {
+            "Primer Seguimiento": 4.2,
+            "Segundo Seguimiento": 3.6,
+            "Tercer Seguimiento": None,
+        }
+        assert _extraer_seguimientos(params) == esperado
 
-    def test_jerarquico_solo_hojas(self):
+    def test_mas_de_tres_parametros_ignora_resto(self):
         params = [
-            {"Consecutivo_parametro": 10, "Nombre_parametro": "Tareas", "Nota": None, "Consecutivo_padre": None},
-            {"Consecutivo_parametro": 11, "Nombre_parametro": "Tarea 1", "Nota": 4.0, "Consecutivo_padre": 10},
-            {"Consecutivo_parametro": 12, "Nombre_parametro": "Tarea 2", "Nota": 3.5, "Consecutivo_padre": 10},
+            {"Consecutivo_parametro": 1, "Nombre_parametro": "Corte 1", "Nota": 5.0},
+            {"Consecutivo_parametro": 2, "Nombre_parametro": "Corte 2", "Nota": 4.0},
+            {"Consecutivo_parametro": 3, "Nombre_parametro": "Corte 3", "Nota": 3.0},
+            {"Consecutivo_parametro": 4, "Nombre_parametro": "Extra", "Nota": 2.0},
         ]
-        assert _extraer_parametros_hoja(params) == {"Tarea 1": 4.0, "Tarea 2": 3.5}
+        esperado = {
+            "Primer Seguimiento": 5.0,
+            "Segundo Seguimiento": 4.0,
+            "Tercer Seguimiento": 3.0,
+        }
+        assert _extraer_seguimientos(params) == esperado
 
-    def test_nota_none_se_incluye(self):
+    def test_menos_de_tres_parametros(self):
         params = [
-            {"Consecutivo_parametro": 1, "Nombre_parametro": "Parcial", "Nota": None},
+            {"Consecutivo_parametro": 1, "Nombre_parametro": "Único", "Nota": 4.0},
         ]
-        result = _extraer_parametros_hoja(params)
-        assert result == {"Parcial": None}
+        esperado = {
+            "Primer Seguimiento": 4.0,
+        }
+        assert _extraer_seguimientos(params) == esperado

@@ -7,45 +7,29 @@ from .utils import guardar_csv, guardar_parquet
 logger = logging.getLogger(__name__)
 
 
-def _es_hoja(parametro, padres):
-    return parametro["Consecutivo_parametro"] not in padres
-
-
-def _extraer_parametros_hoja(parametros_raw):
+def _extraer_seguimientos(parametros_raw):
     if not parametros_raw or not isinstance(parametros_raw, list):
         return {}
 
-    padres = {
-        p["Consecutivo_padre"]
-        for p in parametros_raw
-        if p.get("Consecutivo_padre") is not None
-    }
-
-    hojas = [p for p in parametros_raw if _es_hoja(p, padres)]
-
-    return {h["Nombre_parametro"]: h.get("Nota") for h in hojas}
+    primeros = parametros_raw[:3]
+    etiquetas = ["Primer Seguimiento", "Segundo Seguimiento", "Tercer Seguimiento"]
+    return {etiquetas[i]: p.get("Nota") for i, p in enumerate(primeros)}
 
 
 def transformar_notas(df_raw):
 
-    logger.info("=== TRANSFORMANDO NOTAS (pivot de parámetros hoja) ===")
-
-    registros_pivot = []
-    todos_param_cols = set()
+    logger.info("=== TRANSFORMANDO NOTAS (pivot de seguimientos) ===")
 
     filas_temp = []
 
     for _, row in df_raw.iterrows():
-        params_hoja = _extraer_parametros_hoja(row.get("Parametros_evaluacion"))
+        seg = _extraer_seguimientos(row.get("Parametros_evaluacion"))
 
         fila = row.drop("Parametros_evaluacion").to_dict()
-        fila.update(params_hoja)
+        fila.update(seg)
         filas_temp.append(fila)
-        todos_param_cols.update(params_hoja.keys())
 
     df_pivot = pd.DataFrame(filas_temp)
-
-    logger.info("Columnas de parámetros hoja detectadas: %s", len(todos_param_cols))
 
     guardar_parquet(df_pivot, "notas_pivot.parquet")
     guardar_csv(df_pivot, "notas_pivot.csv")
