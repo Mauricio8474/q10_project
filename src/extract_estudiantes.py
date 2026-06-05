@@ -79,6 +79,21 @@ def ejecutar_extraccion_estudiantes():
             lambda x: pd.Series(separar_sede_programa(x))
         )
 
+    try:
+        notas = pd.read_parquet("data/raw/notas_pivot.parquet")
+        grupo_por_id = (
+            notas[["Numero_identificacion_estudiante", "Grupo"]]
+            .drop_duplicates()
+            .groupby("Numero_identificacion_estudiante")["Grupo"]
+            .apply(lambda x: ", ".join(sorted(x.unique())))
+            .reset_index()
+            .rename(columns={"Numero_identificacion_estudiante": "Numero_identificacion"})
+        )
+        df = df.merge(grupo_por_id, on="Numero_identificacion", how="left")
+        logger.info("Grupo agregado desde notas_pivot")
+    except FileNotFoundError:
+        logger.warning("notas_pivot.parquet no encontrado, se omite Grupo")
+
     guardar_parquet(df, "estudiantes.parquet")
     try:
         df.to_csv("data/raw/estudiantes.csv", index=False, encoding="utf-8-sig")
