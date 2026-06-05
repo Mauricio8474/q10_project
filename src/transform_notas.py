@@ -11,7 +11,8 @@ def _extraer_seguimientos(parametros_raw):
     if not parametros_raw or not isinstance(parametros_raw, list):
         return {}
 
-    primeros = parametros_raw[:3]
+    padres = [p for p in parametros_raw if p.get("Consecutivo_padre") is None]
+    primeros = padres[:3]
     etiquetas = ["Primer Seguimiento", "Segundo Seguimiento", "Tercer Seguimiento"]
     return {etiquetas[i]: p.get("Nota") for i, p in enumerate(primeros)}
 
