@@ -1,6 +1,6 @@
 import pytest
 
-from src.transform_notas import _extraer_seguimientos
+from src.transform_notas import _extraer_seguimientos, _asignar_grupo, _calcular_nota_final
 
 
 class TestExtraerSeguimientos:
@@ -57,3 +57,36 @@ class TestExtraerSeguimientos:
             {"Consecutivo_parametro": 1, "Nombre_parametro": "Unico", "Consecutivo_padre": None, "Nota": 4.0},
         ]
         assert _extraer_seguimientos(params) == {"Primer Seguimiento": 4.0}
+
+
+class TestAsignarGrupo:
+
+    def test_con_sufijo_1(self):
+        assert _asignar_grupo("CURSO (1)") == "1"
+
+    def test_con_sufijo_A(self):
+        assert _asignar_grupo("CURSO (A)") == "A"
+
+    def test_sin_sufijo(self):
+        assert _asignar_grupo("CURSO") == "A"
+
+    def test_nulo(self):
+        assert _asignar_grupo(None) == "A"
+
+    def test_vacio(self):
+        assert _asignar_grupo("") == "A"
+
+
+class TestCalcularNotaFinal:
+
+    def test_notas_completas(self):
+        row = {"Primer Seguimiento": 4.0, "Segundo Seguimiento": 3.0, "Tercer Seguimiento": 5.0}
+        assert _calcular_nota_final(row) == pytest.approx(4.0 * 0.3 + 3.0 * 0.3 + 5.0 * 0.4)
+
+    def test_notas_none(self):
+        row = {"Primer Seguimiento": None, "Segundo Seguimiento": None, "Tercer Seguimiento": None}
+        assert _calcular_nota_final(row) == 0.0
+
+    def test_notas_parciales(self):
+        row = {"Primer Seguimiento": 4.0, "Segundo Seguimiento": None, "Tercer Seguimiento": 5.0}
+        assert _calcular_nota_final(row) == pytest.approx(4.0 * 0.3 + 0 + 5.0 * 0.4)

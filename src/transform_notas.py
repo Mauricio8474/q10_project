@@ -1,4 +1,5 @@
 import logging
+import re
 
 import pandas as pd
 
@@ -17,6 +18,18 @@ def _extraer_seguimientos(parametros_raw):
     return {etiquetas[i]: p.get("Nota") for i, p in enumerate(primeros)}
 
 
+def _asignar_grupo(nombre_curso):
+    m = re.search(r"\((\w+)\)\s*$", str(nombre_curso))
+    return m.group(1) if m else "A"
+
+
+def _calcular_nota_final(row):
+    p1 = row.get("Primer Seguimiento") or 0
+    p2 = row.get("Segundo Seguimiento") or 0
+    p3 = row.get("Tercer Seguimiento") or 0
+    return p1 * 0.3 + p2 * 0.3 + p3 * 0.4
+
+
 def transformar_notas(df_raw):
 
     logger.info("=== TRANSFORMANDO NOTAS (pivot de seguimientos) ===")
@@ -31,6 +44,12 @@ def transformar_notas(df_raw):
         filas_temp.append(fila)
 
     df_pivot = pd.DataFrame(filas_temp)
+
+    df_pivot["Grupo"] = df_pivot["Nombre_curso"].apply(_asignar_grupo)
+    df_pivot["Nombre_curso"] = df_pivot["Nombre_curso"].str.replace(
+        r"\s*\(\w+\)\s*$", "", regex=True
+    )
+    df_pivot["Nota final"] = df_pivot.apply(_calcular_nota_final, axis=1)
 
     guardar_parquet(df_pivot, "notas_pivot.parquet")
     guardar_csv(df_pivot, "notas_pivot.csv")
