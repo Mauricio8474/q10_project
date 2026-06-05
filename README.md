@@ -75,7 +75,7 @@ q10_project/
 │   │
 │   ├── extract_cursos.py       # GET /cursos → catálogo de cursos
 │   ├── extract_notas.py        # GET /evaluaciones/cuantitativo/notas
-│   ├── transform_notas.py      # Pivot de parámetros hoja (notas detalladas)
+│   ├── transform_notas.py      # Pivot: extrae 3 seguimientos, grupo y nota final
 │   ├── extract_inasistencias.py# GET /inasistencias → detalle + agregado
 │   ├── extract_cancelados.py   # GET /matriculas-canceladas
 │   ├── extract_edades.py       # GET /estudiantes/{codigo} → edad, género
@@ -88,7 +88,7 @@ q10_project/
 │   ├── conteo_estudiantes.ipynb
 │   └── dashboard_informe.ipynb  # (futuro)
 │
-├── tests/                      # 22 tests unitarios
+├── tests/                      # 29 tests unitarios
 │   ├── test_extract_edades.py
 │   ├── test_utils.py
 │   ├── test_transform_notas.py
@@ -98,7 +98,7 @@ q10_project/
     ├── raw/                    # Datos crudos por fuente
     │   ├── cursos.{parquet,csv}
     │   ├── notas_raw.{parquet,csv}
-    │   ├── notas_pivot.{parquet,csv,xlsx}   (xlsx: 6 hojas, 200 cols/hoja)
+    │   ├── notas_pivot.{parquet,csv,xlsx}   (columnas: Primer/Segundo/Tercer Seguimiento, Grupo, Nota final)
     │   ├── inasistencias_{agregado,detalle}.{parquet,csv,xlsx}
     │   ├── cancelados.{csv,xlsx,parquet}
     │   └── estudiantes.{parquet,csv}
@@ -128,7 +128,9 @@ main.py  (CLI: python main.py [módulo])
 ├── notas
 │   ├── (usa cursos.parquet para obtener consecutivo_curso por periodo)
 │   ├── GET /evaluaciones/cuantitativo/notas?Consecutivo_curso={id}
-│   └── transform: pivot de parámetros hoja → data/raw/notas_pivot.parquet
+│   └── transform: extrae primeros 3 parámetros padre, renombra a
+│       Primer/Segundo/Tercer Seguimiento, calcula Grupo y Nota final (30/30/40)
+│       → data/raw/notas_pivot.parquet
 │
 ├── inasistencias
 │   └── GET /inasistencias?Fecha_inicio={}&Fecha_fin={}
@@ -193,7 +195,7 @@ Estas dimensiones se fusionan con la tabla de notas durante la consolidación, l
 ## Tests
 
 ```bash
-pytest tests/ -v    # 22 tests
+pytest tests/ -v    # 29 tests
 ```
 
 ---
