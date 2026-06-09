@@ -80,12 +80,14 @@ q10_project/
 │   ├── extract_cancelados.py   # GET /matriculas-canceladas
 │   ├── extract_edades.py       # GET /estudiantes/{codigo} → edad, género
 │   ├── extract_estudiantes.py  # GET /estudiantes?Periodo={id} → clasificación
+│   ├── analisis_inasistencias.py# Clasificación de inasistencias por grupo y seguimiento
 │   ├── consolidar.py           # Consolidación y resumen para KPIs
 │   └── generar_excel.py        # Convierte datasets a .xlsx para revisión
 │
 ├── notebooks/
 │   ├── analisis_cancelados.ipynb
 │   ├── conteo_estudiantes.ipynb
+│   ├── inasistencias_por_seguimiento.ipynb
 │   └── dashboard_informe.ipynb  # (futuro)
 │
 ├── tests/                      # 29 tests unitarios
@@ -115,6 +117,9 @@ q10_project/
 | `BASE_URL` | `https://api.q10.com/v1` |
 | `PERIODOS` | `[5, 6]` — periodos académicos |
 | `PROGRAMAS` | 33 códigos de programa tecnológico USM |
+| `EXCLUIR_PROGRAMAS` | Programas excluidos de la analítica (TecLab, CIES, Diplo) |
+| `PROGRAMAS_GRUPO_B` | Programas con fechas de corte del grupo B |
+| `SEDES_GRUPO_B` | Sedes con fechas de corte del grupo B |
 | `FECHA_INICIO_INASISTENCIAS` | `"2026-02-01"` — inicio del rango |
 
 ## Arquitectura del pipeline
