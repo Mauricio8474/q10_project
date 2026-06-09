@@ -55,6 +55,8 @@ python main.py excel         # Genera archivos .xlsx para revisión manual
 
 ### Análisis exploratorio
 
+Los notebooks son **autocontenidos** (no importan `src/`), se abren desde la raíz del proyecto:
+
 ```bash
 # Activar entorno primero (ver Instalación)
 jupyter notebook notebooks/
@@ -90,11 +92,12 @@ q10_project/
 │   ├── inasistencias_por_seguimiento.ipynb
 │   └── dashboard_informe.ipynb  # (futuro)
 │
-├── tests/                      # 29 tests unitarios
+├── tests/                      # 44 tests unitarios
 │   ├── test_extract_edades.py
 │   ├── test_utils.py
 │   ├── test_transform_notas.py
-│   └── test_consolidar.py
+│   ├── test_consolidar.py
+│   └── test_analisis_inasistencias.py
 │
 └── data/
     ├── raw/                    # Datos crudos por fuente
@@ -115,7 +118,7 @@ q10_project/
 |---|---|
 | `API_KEY` | Clave de autenticación Q10 (desde `.env`) |
 | `BASE_URL` | `https://api.q10.com/v1` |
-| `PERIODOS` | `[5, 6]` — periodos académicos |
+| `PERIODOS` | `[6]` — solo periodo 6 |
 | `PROGRAMAS` | 33 códigos de programa tecnológico USM |
 | `EXCLUIR_PROGRAMAS` | Programas excluidos de la analítica (TecLab, CIES, Diplo) |
 | `PROGRAMAS_GRUPO_B` | Programas con fechas de corte del grupo B |
@@ -200,7 +203,7 @@ Estas dimensiones se fusionan con la tabla de notas durante la consolidación, l
 ## Tests
 
 ```bash
-pytest tests/ -v    # 29 tests
+pytest tests/ -v    # 44 tests
 ```
 
 ---
