@@ -24,6 +24,16 @@ def _asignar_grupo(nombre_curso):
     return m.group(1) if m else "A"
 
 
+def _limpiar_nombre_asignatura(nombre, codigo):
+    if pd.isna(nombre) or pd.isna(codigo):
+        return nombre
+    nombre = str(nombre)
+    prefijo = str(codigo) + "-"
+    if nombre.startswith(prefijo):
+        return nombre[len(prefijo):]
+    return nombre
+
+
 def _calcular_nota_final(row):
     p1 = row.get("Primer Seguimiento") or 0
     p2 = row.get("Segundo Seguimiento") or 0
@@ -48,6 +58,9 @@ def transformar_notas(df_raw):
 
     df_pivot["Grupo"] = df_pivot["Nombre_curso"].apply(_asignar_grupo)
     df_pivot["Nota final"] = df_pivot.apply(_calcular_nota_final, axis=1)
+    df_pivot["Nombre_asignatura"] = df_pivot.apply(
+        lambda r: _limpiar_nombre_asignatura(r["Nombre_asignatura"], r["Codigo_asignatura"]), axis=1
+    )
 
     antes = len(df_pivot)
     df_pivot = df_pivot[~df_pivot["Codigo_programa"].isin(EXCLUIR_PROGRAMAS)].copy()
