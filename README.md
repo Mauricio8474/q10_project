@@ -45,9 +45,9 @@ python main.py
 
 # O ejecutar módulos individuales
 python main.py cursos        # Catálogo de cursos
-python main.py notas         # Notas con pivot de parámetros
-python main.py inasistencias # Inasistencias detalladas
 python main.py cancelados    # Cancelaciones + edades
+python main.py notas         # Notas (filtra estudiantes cancelados)
+python main.py inasistencias # Inasistencias detalladas
 python main.py estudiantes   # Clasificación de estudiantes por sede/programa/nivel/grupo
 python main.py consolidar    # Tabla dimensional unificada
 python main.py excel         # Genera archivos .xlsx para revisión manual
@@ -90,6 +90,7 @@ q10_project/
 │   ├── analisis_cancelados.ipynb
 │   ├── conteo_estudiantes.ipynb
 │   ├── inasistencias_por_seguimiento.ipynb
+│   ├── bajo_rendimiento.ipynb
 │   └── dashboard_informe.ipynb  # (futuro)
 │
 ├── tests/                      # 44 tests unitarios
@@ -133,21 +134,22 @@ main.py  (CLI: python main.py [módulo])
 ├── cursos
 │   └── GET /cursos → data/raw/cursos.parquet
 │
+├── cancelados
+│   ├── GET /matriculas-canceladas (periodo × programa)
+│   ├── GET /estudiantes/{codigo} (edad, género)
+│   └── → data/raw/cancelados.{csv,parquet}
+│
 ├── notas
 │   ├── (usa cursos.parquet para obtener consecutivo_curso por periodo)
 │   ├── GET /evaluaciones/cuantitativo/notas?Consecutivo_curso={id}
-│   └── transform: extrae primeros 3 parámetros padre, renombra a
-│       Primer/Segundo/Tercer Seguimiento, calcula Grupo y Nota final (30/30/40)
+│   ├── transform: extrae primeros 3 parámetros padre, renombra a
+│   │   Primer/Segundo/Tercer Seguimiento, calcula Grupo y Nota final (30/30/40)
+│   └── filtra estudiantes que aparecen en cancelados (Numero_identificacion)
 │       → data/raw/notas_pivot.parquet
 │
 ├── inasistencias
 │   └── GET /inasistencias?Fecha_inicio={}&Fecha_fin={}
 │       → data/raw/inasistencias_{agregado,detalle}.parquet
-│
-├── cancelados
-│   ├── GET /matriculas-canceladas (periodo × programa)
-│   ├── GET /estudiantes/{codigo} (edad, género)
-│   └── → data/raw/cancelados.{csv,parquet}
 │
 ├── estudiantes
 │   └── GET /estudiantes?Periodo={id} (con paginación)
