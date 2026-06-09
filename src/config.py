@@ -13,7 +13,7 @@ HEADERS = {
     "api-key": API_KEY
 }
 
-PERIODOS = [5, 6]
+PERIODOS = [6]
 
 PROGRAMAS = [
     "Tecnolog-Logis-Bas",
