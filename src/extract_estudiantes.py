@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 import time
 
-from .config import BASE_URL, HEADERS, PERIODOS
+from .config import BASE_URL, HEADERS, PERIODOS, EXCLUIR_PROGRAMAS
 from .utils import request_with_retry, guardar_parquet
 
 logger = logging.getLogger(__name__)
@@ -93,6 +93,10 @@ def ejecutar_extraccion_estudiantes():
         logger.info("Grupo agregado desde notas_pivot")
     except FileNotFoundError:
         logger.warning("notas_pivot.parquet no encontrado, se omite Grupo")
+
+    antes = len(df)
+    df = df[~df["Codigo_programa"].isin(EXCLUIR_PROGRAMAS)].copy()
+    logger.info("Programas excluidos: %s registros eliminados", antes - len(df))
 
     guardar_parquet(df, "estudiantes.parquet")
     try:

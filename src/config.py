@@ -55,6 +55,19 @@ PROGRAMAS = [
 # INASISTENCIAS — Rango de fechas
 # ---------------------------------------------------
 
+# ---------------------------------------------------
+# PROGRAMAS EXCLUIDOS DE LA ANALÍTICA
+# ---------------------------------------------------
+
+EXCLUIR_PROGRAMAS = [
+    "TecLab-AuxAdmin",
+    "TecLab-MarkDig",
+    "CIES-Univ",
+    "CIES-RAF-FICAT",
+    "DiploHASPS-1",
+    "DiploHCNSPS-1",
+]
+
 FECHA_INICIO_INASISTENCIAS = "2026-02-01"
 FECHA_FIN_INASISTENCIAS = None  # Se asigna en runtime con datetime.now()
 

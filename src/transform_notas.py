@@ -3,6 +3,7 @@ import re
 
 import pandas as pd
 
+from .config import EXCLUIR_PROGRAMAS
 from .utils import guardar_csv, guardar_parquet
 
 logger = logging.getLogger(__name__)
@@ -47,6 +48,10 @@ def transformar_notas(df_raw):
 
     df_pivot["Grupo"] = df_pivot["Nombre_curso"].apply(_asignar_grupo)
     df_pivot["Nota final"] = df_pivot.apply(_calcular_nota_final, axis=1)
+
+    antes = len(df_pivot)
+    df_pivot = df_pivot[~df_pivot["Codigo_programa"].isin(EXCLUIR_PROGRAMAS)].copy()
+    logger.info("Programas excluidos: %s registros eliminados", antes - len(df_pivot))
 
     guardar_parquet(df_pivot, "notas_pivot.parquet")
     guardar_csv(df_pivot, "notas_pivot.csv")
