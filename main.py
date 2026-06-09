@@ -5,7 +5,7 @@ import sys
 
 import pandas as pd
 
-from src.utils import setup_logging, resumen_dataframe, guardar_csv
+from src.utils import setup_logging, resumen_dataframe, guardar_csv, guardar_parquet
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -55,6 +55,17 @@ def cmd_notas():
 
     df_raw = ejecutar_extraccion_notas()
     df_pivot = transformar_notas(df_raw)
+
+    ruta_cancelados = "data/raw/cancelados.parquet"
+    if os.path.exists(ruta_cancelados):
+        cancelados = pd.read_parquet(ruta_cancelados)
+        ids_cancelados = cancelados["Numero_identificacion"].unique()
+        antes = len(df_pivot)
+        df_pivot = df_pivot[~df_pivot["Numero_identificacion_estudiante"].isin(ids_cancelados)].copy()
+        logger.info("Estudiantes cancelados eliminados de notas: %s registros", antes - len(df_pivot))
+        guardar_parquet(df_pivot, "notas_pivot.parquet")
+        guardar_csv(df_pivot, "notas_pivot.csv")
+
     resumen_dataframe(df_pivot)
 
 
@@ -81,9 +92,9 @@ def cmd_excel():
 
 def cmd_todo():
     cmd_cursos()
+    cmd_cancelados()
     cmd_notas()
     cmd_inasistencias()
-    cmd_cancelados()
     cmd_estudiantes()
     cmd_consolidar()
     cmd_excel()
