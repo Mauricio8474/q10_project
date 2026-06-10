@@ -105,6 +105,11 @@ def ejecutar_extraccion_inasistencias():
     df_agregado = pd.DataFrame(agregado)
     df_detalle = pd.DataFrame(detalle)
 
+    for df_tmp in [df_agregado, df_detalle]:
+        df_tmp["Nombre_modulo"] = df_tmp["Nombre_modulo"].str.replace(
+            r"^\d+-\s*", "", regex=True
+        )
+
     modulos_excluir = [
         "CIES-Univ-001", "CIES-Univ-002", "CIES-Univ-003",
         "CIES-Univ-005", "CIES-Univ-006", "CIES-Univ-004",
