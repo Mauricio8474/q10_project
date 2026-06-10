@@ -75,27 +75,26 @@ q10_project/
 ├── src/
 │   ├── config.py               # API_KEY, URL, periodos, programas, fechas
 │   ├── utils.py                # logging, retry, guardar CSV/parquet
-│   │
-│   ├── extract_cursos.py       # GET /cursos → catálogo de cursos
+│   ├── extract_cursos.py       # GET /cursos
 │   ├── extract_notas.py        # GET /evaluaciones/cuantitativo/notas
-│   ├── transform_notas.py      # Pivot: extrae 3 seguimientos, grupo y nota final
-│   ├── extract_inasistencias.py# GET /inasistencias → detalle + agregado
+│   ├── transform_notas.py      # Pivot seguimientos, Grupo, Nota final, limpia Nombre_asignatura
+│   ├── extract_inasistencias.py# GET /inasistencias
 │   ├── extract_cancelados.py   # GET /matriculas-canceladas
-│   ├── extract_edades.py       # GET /estudiantes/{codigo} → edad, género
-│   ├── extract_estudiantes.py  # GET /estudiantes?Periodo={id} → clasificación
-│   ├── analisis_inasistencias.py# Clasificación de inasistencias por grupo y seguimiento
-│   ├── reporte_bajo_rendimiento.py # Tablas resumen de bajo rendimiento (CSV/Excel)
-│   ├── consolidar.py           # Consolidación y resumen para KPIs
-│   └── generar_excel.py        # Convierte datasets a .xlsx para revisión
+│   ├── extract_edades.py       # GET /estudiantes/{codigo} (edad, género)
+│   ├── extract_estudiantes.py  # GET /estudiantes (clasificación)
+│   ├── analisis_inasistencias.py # Clasificación de inasistencias por grupo/seguimiento
+│   ├── reporte_bajo_rendimiento.py # Tablas bajo rendimiento → CSV/Excel
+│   ├── consolidar.py           # Consolidación y KPIs
+│   └── generar_excel.py        # Datasets a .xlsx
 │
 ├── notebooks/
 │   ├── analisis_cancelados.ipynb
 │   ├── conteo_estudiantes.ipynb
 │   ├── inasistencias_por_seguimiento.ipynb
-│   ├── bajo_rendimiento.ipynb   # Estudiantes con nota < 3.0 por programa/semestre/sede/asignatura/área
-│   └── dashboard_informe.ipynb  # (futuro)
+│   ├── bajo_rendimiento.ipynb        # Nota < 3.0 por área/asignatura/curso + estudiantes_revisión
+│   └── dashboard_informe.ipynb       # (futuro)
 │
-├── tests/                      # 44 tests unitarios
+├── tests/                      # 44 tests
 │   ├── test_extract_edades.py
 │   ├── test_utils.py
 │   ├── test_transform_notas.py
@@ -103,19 +102,19 @@ q10_project/
 │   └── test_analisis_inasistencias.py
 │
 └── data/
-    ├── raw/                    # Datos crudos por fuente
+    ├── raw/                    # Datos crudos
     │   ├── cursos.{parquet,csv}
     │   ├── notas_raw.{parquet,csv}
-    │   ├── notas_pivot.{parquet,csv,xlsx}   (columnas: Primer/Segundo/Tercer Seguimiento, Grupo, Nota final)
+    │   ├── notas_pivot.{parquet,csv,xlsx}
     │   ├── inasistencias_{agregado,detalle}.{parquet,csv,xlsx}
-    │   ├── cancelados.{csv,xlsx,parquet}
-    │   └── estudiantes.{parquet,csv}
-    ├── reportes/               # Reportes de bajo rendimiento
-    │   ├── bajo_rendimiento.xlsx      (4 hojas: área, asignatura, curso, estudiantes_revisión)
+    │   ├── cancelados.{parquet,csv,xlsx}
+    │   ├── estudiantes.{parquet,csv,xlsx}
+    ├── reportes/
+    │   ├── bajo_rendimiento.xlsx     (4 hojas: área, asignatura, curso, estudiantes_revisión)
     │   └── bajo_rendimiento_*.csv
-    └── processed/              # Datos consolidados
+    └── processed/
         ├── consolidado_notas.{parquet,csv}
-        └── resumen_informe.xlsx   (5 hojas: promedios por programa/sede/jornada/nivel, inasistencias)
+        └── resumen_informe.xlsx
 ```
 
 ## Configuración (`src/config.py`)
