@@ -41,7 +41,7 @@ def enriquecer_inasistencias(df_detalle, df_estudiantes):
 
     df["Fecha_inasistencia"] = pd.to_datetime(df["Fecha_inasistencia"], errors="coerce")
 
-    est = df_estudiantes[["Numero_identificacion", "Nombre_programa_limpio", "Sede"]].drop_duplicates(
+    est = df_estudiantes[["Numero_identificacion", "Nombre_programa_limpio", "Sede", "Nombre_nivel"]].drop_duplicates(
         subset="Numero_identificacion"
     )
 

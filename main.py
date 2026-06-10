@@ -71,10 +71,16 @@ def cmd_notas():
 
 def cmd_inasistencias():
     from src.extract_inasistencias import ejecutar_extraccion_inasistencias
+    from src.analisis_inasistencias import enriquecer_inasistencias
 
     df_agregado, df_detalle = ejecutar_extraccion_inasistencias()
     logger.info("Agregado: %s registros", len(df_agregado))
     logger.info("Detalle: %s registros", len(df_detalle))
+
+    df_est = pd.read_parquet("data/raw/estudiantes.parquet")
+    df_enriquecido = enriquecer_inasistencias(df_detalle, df_est)
+    guardar_parquet(df_enriquecido, "inasistencias_enriquecido.parquet")
+    guardar_csv(df_enriquecido, "inasistencias_enriquecido.csv")
 
 
 def cmd_consolidar():
