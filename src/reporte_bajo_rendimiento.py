@@ -21,12 +21,14 @@ def generar_reporte_bajo_rendimiento():
     )
 
     df["bajo"] = (df["Nota final"] < 3.0) & (df["Nota final"] > 1)
+    df["condicion_de_alerta"] = (df["Nota final"] <= 1) & (df["Nota final"] >= 0)
     df["Area"] = df["Nombre_asignatura"].apply(_asignar_area)
 
     tablas = {
         "bajo_rendimiento_area": _tabla_area(df),
         "bajo_rendimiento_asignatura": _tabla_asignatura(df),
         "bajo_rendimiento_curso": _tabla_curso(df),
+        "estudiantes_revision": _tabla_estudiantes_revision(df),
     }
 
     Path("data/reportes").mkdir(parents=True, exist_ok=True)
@@ -153,3 +155,9 @@ def _tabla_curso(df):
     ).reset_index().assign(
         Porcentaje_bajo=lambda x: (x["Porcentaje_bajo"] * 100).round(1)
     ).sort_values("Porcentaje_bajo", ascending=False).reset_index(drop=True)
+
+
+def _tabla_estudiantes_revision(df):
+    return df[df["condicion_de_alerta"]][
+        ["Nombre_completo_estudiante", "Numero_identificacion_estudiante", "Sede", "Nombre_programa_limpio", "Nombre_asignatura", "Nota final"]
+    ].drop_duplicates().reset_index(drop=True)
