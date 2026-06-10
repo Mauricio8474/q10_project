@@ -105,6 +105,20 @@ def ejecutar_extraccion_inasistencias():
     df_agregado = pd.DataFrame(agregado)
     df_detalle = pd.DataFrame(detalle)
 
+    modulos_excluir = [
+        "CIES-Univ-001", "CIES-Univ-002", "CIES-Univ-003",
+        "CIES-Univ-005", "CIES-Univ-006", "CIES-Univ-004",
+        "TecLab-AuxAdmin-004", "TecLab-MarkDig-004", "TecLab-001",
+    ]
+    antes_ag = len(df_agregado)
+    antes_det = len(df_detalle)
+    df_agregado = df_agregado[~df_agregado["Codigo_modulo"].isin(modulos_excluir)].copy()
+    df_detalle = df_detalle[~df_detalle["Codigo_modulo"].isin(modulos_excluir)].copy()
+    logger.info(
+        "Módulos excluidos: agregado %s→%s, detalle %s→%s",
+        antes_ag, len(df_agregado), antes_det, len(df_detalle),
+    )
+
     guardar_parquet(df_agregado, "inasistencias_agregado.parquet")
     guardar_csv(df_agregado, "inasistencias_agregado.csv")
 
