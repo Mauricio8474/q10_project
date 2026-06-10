@@ -51,6 +51,7 @@ python main.py inasistencias # Inasistencias detalladas
 python main.py estudiantes   # Clasificación de estudiantes por sede/programa/nivel/grupo
 python main.py consolidar    # Tabla dimensional unificada
 python main.py excel         # Genera archivos .xlsx para revisión manual
+python main.py reporte       # Reporte bajo rendimiento (CSV + Excel por área/asignatura/curso)
 ```
 
 ### Análisis exploratorio
@@ -83,6 +84,7 @@ q10_project/
 │   ├── extract_edades.py       # GET /estudiantes/{codigo} → edad, género
 │   ├── extract_estudiantes.py  # GET /estudiantes?Periodo={id} → clasificación
 │   ├── analisis_inasistencias.py# Clasificación de inasistencias por grupo y seguimiento
+│   ├── reporte_bajo_rendimiento.py # Tablas resumen de bajo rendimiento (CSV/Excel)
 │   ├── consolidar.py           # Consolidación y resumen para KPIs
 │   └── generar_excel.py        # Convierte datasets a .xlsx para revisión
 │
@@ -108,6 +110,9 @@ q10_project/
     │   ├── inasistencias_{agregado,detalle}.{parquet,csv,xlsx}
     │   ├── cancelados.{csv,xlsx,parquet}
     │   └── estudiantes.{parquet,csv}
+    ├── reportes/               # Reportes de bajo rendimiento
+    │   ├── bajo_rendimiento.xlsx      (4 hojas: área, asignatura, curso, estudiantes_revisión)
+    │   └── bajo_rendimiento_*.csv
     └── processed/              # Datos consolidados
         ├── consolidado_notas.{parquet,csv}
         └── resumen_informe.xlsx   (5 hojas: promedios por programa/sede/jornada/nivel, inasistencias)
