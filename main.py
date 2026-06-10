@@ -90,6 +90,12 @@ def cmd_excel():
     generar_excel_revision()
 
 
+def cmd_reporte():
+    from src.reporte_bajo_rendimiento import generar_reporte_bajo_rendimiento
+
+    generar_reporte_bajo_rendimiento()
+
+
 def cmd_todo():
     cmd_cursos()
     cmd_cancelados()
@@ -98,6 +104,7 @@ def cmd_todo():
     cmd_estudiantes()
     cmd_consolidar()
     cmd_excel()
+    cmd_reporte()
 
 
 def main():
@@ -106,7 +113,7 @@ def main():
         "comando",
         nargs="?",
         default="todo",
-        choices=["cancelados", "cursos", "notas", "inasistencias", "estudiantes", "consolidar", "excel", "todo"],
+        choices=["cancelados", "cursos", "notas", "inasistencias", "estudiantes", "consolidar", "excel", "reporte", "todo"],
         help="Módulo a ejecutar (default: todo)"
     )
 
@@ -120,6 +127,7 @@ def main():
         "estudiantes": cmd_estudiantes,
         "consolidar": cmd_consolidar,
         "excel": cmd_excel,
+        "reporte": cmd_reporte,
         "todo": cmd_todo,
     }[args.comando]()
 
