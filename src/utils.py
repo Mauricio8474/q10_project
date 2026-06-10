@@ -39,9 +39,11 @@ def request_with_retry(func, *args, max_retries=3, delay=1, **kwargs):
                 e, intento + 1, max_retries
             )
             time.sleep(delay * (2 ** intento))
-    raise RuntimeError(
-        f"Fallaron los {max_retries} intentos para {func.__name__}"
+    logger.error(
+        "Fallaron los %s intentos para %s — devolviendo None",
+        max_retries, func.__name__
     )
+    return None
 
 logger = logging.getLogger(__name__)
 

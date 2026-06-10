@@ -29,9 +29,14 @@ def obtener_cursos(limit=5000):
             params=params
         )
 
+        if response is None:
+            logger.warning("Cursos | Offset %s | Sin respuesta — abortando", offset)
+            break
+
         logger.info("Cursos | Offset %s | Status %s", offset, response.status_code)
 
         if response.status_code != 200:
+            logger.warning("Cursos | Offset %s | Status %s — abortando", offset, response.status_code)
             break
 
         data = response.json()

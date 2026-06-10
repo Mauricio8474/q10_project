@@ -77,7 +77,12 @@ def cmd_inasistencias():
     logger.info("Agregado: %s registros", len(df_agregado))
     logger.info("Detalle: %s registros", len(df_detalle))
 
-    df_est = pd.read_parquet("data/raw/estudiantes.parquet")
+    try:
+        df_est = pd.read_parquet("data/raw/estudiantes.parquet")
+    except FileNotFoundError:
+        logger.warning("estudiantes.parquet no encontrado — saltando enriquecimiento de inasistencias")
+        return
+
     df_enriquecido = enriquecer_inasistencias(df_detalle, df_est)
     guardar_parquet(df_enriquecido, "inasistencias_enriquecido.parquet")
     guardar_csv(df_enriquecido, "inasistencias_enriquecido.csv")

@@ -21,6 +21,10 @@ def obtener_notas_curso(consecutivo_curso):
         params=params
     )
 
+    if response is None:
+        logger.warning("Curso %s | Sin respuesta — saltando", consecutivo_curso)
+        return None
+
     if response.status_code != 200:
         logger.warning("Curso %s | Status %s — saltando", consecutivo_curso, response.status_code)
         return None
@@ -33,15 +37,23 @@ def ejecutar_extraccion_notas(df_cursos=None):
     logger.info("=== EXTRAYENDO NOTAS ===")
 
     if df_cursos is None:
-        df_cursos = pd.read_parquet("data/raw/cursos.parquet")
+        try:
+            df_cursos = pd.read_parquet("data/raw/cursos.parquet")
+        except FileNotFoundError:
+            logger.error("No se encuentra data/raw/cursos.parquet — ejecute 'python main.py cursos' primero")
+            return pd.DataFrame()
 
     cursos_periodo = df_cursos[
         df_cursos["Consecutivo_periodo"].isin(PERIODOS) &
         (df_cursos["Estado"] == "Abierto")
     ]
-    cursos_ids = cursos_periodo["Consecutivo"].unique().tolist()
+    cursos_ids = cursos_periodo["Consecutivo"].unique().tolist() if not cursos_periodo.empty else []
 
     logger.info("Cursos a procesar (periodos %s): %s", PERIODOS, len(cursos_ids))
+
+    if not cursos_ids:
+        logger.warning("No hay cursos para los periodos %s — devolviendo vacío", PERIODOS)
+        return pd.DataFrame()
 
     registros = []
 

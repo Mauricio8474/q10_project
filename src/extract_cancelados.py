@@ -41,12 +41,23 @@ def obtener_cancelados(periodo, programa):
             params=params
         )
 
+        if response is None:
+            logger.warning(
+                "Periodo %s | Programa %s | Offset %s | Sin respuesta — saltando",
+                periodo, programa, offset
+            )
+            break
+
         logger.info(
             "Periodo %s | Programa %s | Offset %s | Status %s",
             periodo, programa, offset, response.status_code
         )
 
         if response.status_code != 200:
+            logger.warning(
+                "Periodo %s | Programa %s | Offset %s | Status %s — saltando",
+                periodo, programa, offset, response.status_code
+            )
             break
 
         data = response.json()

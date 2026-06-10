@@ -10,8 +10,12 @@ logger = logging.getLogger(__name__)
 def generar_reporte_bajo_rendimiento():
     logger.info("=== GENERANDO REPORTE DE BAJO RENDIMIENTO ===")
 
-    notas = pd.read_csv("data/raw/notas_pivot.csv")
-    est = pd.read_csv("data/raw/estudiantes.csv")
+    try:
+        notas = pd.read_csv("data/raw/notas_pivot.csv")
+        est = pd.read_csv("data/raw/estudiantes.csv")
+    except FileNotFoundError as e:
+        logger.error("Archivo faltante: %s — ejecute 'python main.py todo' primero", e)
+        return {}
 
     df = notas.merge(
         est[["Numero_identificacion", "Nombre_nivel", "Sede", "Nombre_programa_limpio"]],
