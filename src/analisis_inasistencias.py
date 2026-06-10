@@ -15,9 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 def _asignar_grupo_estudiante(programa, sede):
+    if pd.isna(programa) and pd.isna(sede):
+        return "A"
     if (
-        (programa and programa.strip().upper() in [p.upper() for p in PROGRAMAS_GRUPO_B])
-        or (sede and sede.strip().upper() in [s.upper() for s in SEDES_GRUPO_B])
+        (pd.notna(programa) and programa.strip().upper() in [p.upper() for p in PROGRAMAS_GRUPO_B])
+        or (pd.notna(sede) and sede.strip().upper() in [s.upper() for s in SEDES_GRUPO_B])
     ):
         return "B"
     return "A"
