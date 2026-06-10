@@ -110,7 +110,7 @@ q10_project/
     │   ├── cancelados.{parquet,csv,xlsx}
     │   ├── estudiantes.{parquet,csv,xlsx}
     ├── reportes/
-    │   ├── bajo_rendimiento.xlsx     (4 hojas: área, asignatura, curso, estudiantes_revisión)
+    │   ├── bajo_rendimiento.xlsx  (4 hojas: área, asignatura, curso, estudiantes_revisión)
     │   └── bajo_rendimiento_*.csv
     └── processed/
         ├── consolidado_notas.{parquet,csv}
