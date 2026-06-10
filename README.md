@@ -90,7 +90,7 @@ q10_project/
 │   ├── analisis_cancelados.ipynb
 │   ├── conteo_estudiantes.ipynb
 │   ├── inasistencias_por_seguimiento.ipynb
-│   ├── bajo_rendimiento.ipynb
+│   ├── bajo_rendimiento.ipynb   # Estudiantes con nota < 3.0 por programa/semestre/sede/asignatura/área
 │   └── dashboard_informe.ipynb  # (futuro)
 │
 ├── tests/                      # 44 tests unitarios
@@ -144,6 +144,7 @@ main.py  (CLI: python main.py [módulo])
 │   ├── GET /evaluaciones/cuantitativo/notas?Consecutivo_curso={id}
 │   ├── transform: extrae primeros 3 parámetros padre, renombra a
 │   │   Primer/Segundo/Tercer Seguimiento, calcula Grupo y Nota final (30/30/40)
+│   ├── limpia Nombre_asignatura (quita prefijo "{codigo}-")
 │   └── filtra estudiantes que aparecen en cancelados (Numero_identificacion)
 │       → data/raw/notas_pivot.parquet
 │
