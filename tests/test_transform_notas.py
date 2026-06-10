@@ -1,6 +1,6 @@
 import pytest
 
-from src.transform_notas import _extraer_seguimientos, _asignar_grupo, _calcular_nota_final
+from src.transform_notas import _extraer_seguimientos, _asignar_grupo, _calcular_nota_final, _limpiar_nombre_asignatura
 
 
 class TestExtraerSeguimientos:
@@ -90,3 +90,18 @@ class TestCalcularNotaFinal:
     def test_notas_parciales(self):
         row = {"Primer Seguimiento": 4.0, "Segundo Seguimiento": None, "Tercer Seguimiento": 5.0}
         assert _calcular_nota_final(row) == pytest.approx(4.0 * 0.3 + 0 + 5.0 * 0.4)
+
+
+class TestLimpiarNombreAsignatura:
+
+    def test_quita_prefijo(self):
+        assert _limpiar_nombre_asignatura("42040107-GESTIÓN NAVIERA Y PORTUARIA", "42040107") == "GESTIÓN NAVIERA Y PORTUARIA"
+
+    def test_sin_prefijo(self):
+        assert _limpiar_nombre_asignatura("COMUNICACIÓN ESCRITA", "XYZ") == "COMUNICACIÓN ESCRITA"
+
+    def test_nombre_nulo(self):
+        assert _limpiar_nombre_asignatura(None, "123") is None
+
+    def test_codigo_nulo(self):
+        assert _limpiar_nombre_asignatura("ALGO", None) == "ALGO"

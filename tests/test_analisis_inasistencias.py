@@ -24,6 +24,12 @@ class TestAsignarGrupoEstudiante:
     def test_none(self):
         assert _asignar_grupo_estudiante(None, None) == "A"
 
+    def test_nan_float(self):
+        assert _asignar_grupo_estudiante(float("nan"), float("nan")) == "A"
+
+    def test_nan_programa_sede_valida(self):
+        assert _asignar_grupo_estudiante(float("nan"), "MINCA") == "B"
+
     def test_solo_programa_b(self):
         assert _asignar_grupo_estudiante("TECNOLOGÍA EN GESTIÓN DE PRODUCCIÓN DE MODAS", "BASTIDAS") == "B"
 
