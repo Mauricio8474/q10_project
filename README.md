@@ -1,6 +1,6 @@
 # q10_project — ETL Académico USM
 
-Pipeline ETL que extrae datos académicos desde la **API Q10** (sistema de gestión académica) de la **Universidad del Magdalena (USM)**: cancelaciones, rendimiento académico (notas), inasistencias, clasificación de estudiantes y catálogo de cursos. Los datos se limpian, transforman y consolidan para alimentar KPIs institucionales con segmentación por sede, programa, nivel, grupo y jornada.
+Pipeline ETL que extrae datos académicos desde la **API Q10** (sistema de gestión académica) de la **Institución Universitaria de Santa Marta (USM)**: cancelaciones, rendimiento académico (notas), inasistencias, clasificación de estudiantes y catálogo de cursos. Los datos se limpian, transforman y consolidan para alimentar KPIs institucionales con segmentación por sede, programa, nivel, grupo y jornada.
 
 ---
 
@@ -211,4 +211,4 @@ pytest tests/ -v    # 44 tests
 
 ---
 
-Proyecto desarrollado para el análisis institucional de la Universidad del Magdalena.
+Proyecto desarrollado para el análisis institucional de la Institución Universitaria de Santa Marta (USM).
