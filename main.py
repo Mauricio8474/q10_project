@@ -86,6 +86,7 @@ def cmd_inasistencias():
     df_enriquecido = enriquecer_inasistencias(df_detalle, df_est)
     guardar_parquet(df_enriquecido, "inasistencias_enriquecido.parquet")
     guardar_csv(df_enriquecido, "inasistencias_enriquecido.csv")
+    df_enriquecido.to_excel("data/raw/inasistencias_enriquecido.xlsx", index=False, sheet_name="Inasistencias")
 
 
 def cmd_consolidar():
