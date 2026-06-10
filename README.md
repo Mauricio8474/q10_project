@@ -47,8 +47,8 @@ python main.py
 python main.py cursos        # Catálogo de cursos
 python main.py cancelados    # Cancelaciones + edades
 python main.py notas         # Notas (filtra estudiantes cancelados)
-python main.py inasistencias # Inasistencias detalladas
-python main.py estudiantes   # Clasificación de estudiantes por sede/programa/nivel/grupo
+python main.py estudiantes   # Clasificación de estudiantes
+python main.py inasistencias # Inasistencias detalladas + enriquecidas por sede/programa/nivel/grupo
 python main.py consolidar    # Tabla dimensional unificada
 python main.py excel         # Genera archivos .xlsx para revisión manual
 python main.py reporte       # Reporte bajo rendimiento (CSV + Excel por área/asignatura/curso)
@@ -152,13 +152,16 @@ main.py  (CLI: python main.py [módulo])
 │   └── filtra estudiantes que aparecen en cancelados (Numero_identificacion)
 │       → data/raw/notas_pivot.parquet
 │
-├── inasistencias
-│   └── GET /inasistencias?Fecha_inicio={}&Fecha_fin={}
-│       → data/raw/inasistencias_{agregado,detalle}.parquet
-│
 ├── estudiantes
 │   └── GET /estudiantes?Periodo={id} (con paginación)
-│       → data/raw/estudiantes.parquet   (34 columnas de clasificación)
+│       → data/raw/estudiantes.parquet
+│
+├── inasistencias
+│   ├── GET /inasistencias?Fecha_inicio={}&Fecha_fin={}
+│   ├── filtra módulos no relevantes (CIES, TecLab)
+│   ├── limpia Nombre_modulo (quita prefijo numérico)
+│   └── enriquece con Sede, Programa, Semestre, Grupo (A/B), Seguimiento
+│       → data/raw/inasistencias_{agregado,detalle,enriquecido}.parquet   (34 columnas de clasificación)
 │
 ├── consolidar
 │   ├── merge: notas_pivot + clasificación estudiantes (por Numero_identificacion)
