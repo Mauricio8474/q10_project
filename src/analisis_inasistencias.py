@@ -71,6 +71,12 @@ def enriquecer_inasistencias(df_detalle, df_estudiantes):
         how="left",
     )
 
+    antes = len(df)
+    df = df[df["Nombre_programa_limpio"].notna() & (df["Nombre_programa_limpio"].str.strip() != "")].copy()
+    eliminados = antes - len(df)
+    if eliminados:
+        logger.info("Registros sin programa (excluidos): %s", eliminados)
+
     df["Grupo"] = df.apply(
         lambda r: _asignar_grupo_estudiante(
             r.get("Nombre_programa_limpio"), r.get("Sede"), r.get("Nombre_nivel")
