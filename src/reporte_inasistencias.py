@@ -110,7 +110,10 @@ def _resumen_estudiantes(df):
 
 
 def _tabla_asignatura_estudiante(df):
-    return df.groupby(["Nombre_completo_estudiante", "Nombre_modulo", "Seguimiento"]).agg(
+    return df.groupby([
+        "Nombre_completo_estudiante", "Nombre_programa_limpio", "Sede",
+        "Nombre_modulo", "Seguimiento",
+    ]).agg(
         Inasistencias_Totales=("Seguimiento", "count"),
     ).reset_index().sort_values(
         "Inasistencias_Totales", ascending=False
