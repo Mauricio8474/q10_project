@@ -119,13 +119,24 @@ def cmd_todo():
     cmd_reporte()
 
 
+def cmd_rapido():
+    """Ejecuta todo el pipeline excepto notas (el más lento)."""
+    cmd_cursos()
+    cmd_cancelados()
+    cmd_estudiantes()
+    cmd_inasistencias()
+    cmd_consolidar()
+    cmd_excel()
+    cmd_reporte()
+
+
 def main():
     parser = argparse.ArgumentParser(description="q10_project — ETL académico USM")
     parser.add_argument(
         "comando",
         nargs="?",
         default="todo",
-        choices=["cancelados", "cursos", "notas", "inasistencias", "estudiantes", "consolidar", "excel", "reporte", "todo"],
+        choices=["cancelados", "cursos", "notas", "inasistencias", "estudiantes", "consolidar", "excel", "reporte", "todo", "rapido"],
         help="Módulo a ejecutar (default: todo)"
     )
 
@@ -141,6 +152,7 @@ def main():
         "excel": cmd_excel,
         "reporte": cmd_reporte,
         "todo": cmd_todo,
+        "rapido": cmd_rapido,
     }[args.comando]()
 
 
