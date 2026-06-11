@@ -108,6 +108,12 @@ def cmd_reporte():
     generar_reporte_bajo_rendimiento()
 
 
+def cmd_reporte_inasistencias():
+    from src.reporte_inasistencias import generar_reporte_inasistencias
+
+    generar_reporte_inasistencias()
+
+
 def cmd_todo():
     cmd_cursos()
     cmd_cancelados()
@@ -117,6 +123,7 @@ def cmd_todo():
     cmd_consolidar()
     cmd_excel()
     cmd_reporte()
+    cmd_reporte_inasistencias()
 
 
 def cmd_rapido():
@@ -128,6 +135,7 @@ def cmd_rapido():
     cmd_consolidar()
     cmd_excel()
     cmd_reporte()
+    cmd_reporte_inasistencias()
 
 
 def main():
@@ -136,7 +144,7 @@ def main():
         "comando",
         nargs="?",
         default="todo",
-        choices=["cancelados", "cursos", "notas", "inasistencias", "estudiantes", "consolidar", "excel", "reporte", "todo", "rapido"],
+        choices=["cancelados", "cursos", "notas", "inasistencias", "estudiantes", "consolidar", "excel", "reporte", "reporte_inasistencias", "todo", "rapido"],
         help="Módulo a ejecutar (default: todo)"
     )
 
@@ -151,6 +159,7 @@ def main():
         "consolidar": cmd_consolidar,
         "excel": cmd_excel,
         "reporte": cmd_reporte,
+        "reporte_inasistencias": cmd_reporte_inasistencias,
         "todo": cmd_todo,
         "rapido": cmd_rapido,
     }[args.comando]()
