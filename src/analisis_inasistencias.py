@@ -5,6 +5,7 @@ import pandas as pd
 from .config import (
     PROGRAMAS_GRUPO_B,
     SEDES_GRUPO_B_MODA,
+    SEDES_GRUPO_B_LOGISTICA_MARKETING,
     SEMESTRE_GRUPO_B,
     CORTES_A,
     CORTES_B,
@@ -15,28 +16,29 @@ from .config import (
 logger = logging.getLogger(__name__)
 
 
+def _es_sede_valida(sede, sedes_permitidas):
+    return pd.notna(sede) and sede.strip().upper() in [s.upper() for s in sedes_permitidas]
+
+
 def _asignar_grupo_estudiante(programa, sede, nombre_nivel=None):
     if pd.isna(programa):
         return "A"
     prog = programa.strip().upper()
-    # Semestre 1 check
     es_semestre_1 = (
         pd.notna(nombre_nivel)
         and nombre_nivel.strip().upper() == SEMESTRE_GRUPO_B.upper()
     )
     if not es_semestre_1:
         return "A"
-    # Moda en INEM
+    # Moda solo en INEM
     if any(p.upper() == prog for p in PROGRAMAS_GRUPO_B["MODA"]):
-        if pd.notna(sede) and sede.strip().upper() in [s.upper() for s in SEDES_GRUPO_B_MODA]:
-            return "B"
-        return "A"
-    # Logística
+        return "B" if _es_sede_valida(sede, SEDES_GRUPO_B_MODA) else "A"
+    # Logística solo en MINCA / BURITACA
     if any(p.upper() == prog for p in PROGRAMAS_GRUPO_B["LOGISTICA"]):
-        return "B"
-    # Marketing
+        return "B" if _es_sede_valida(sede, SEDES_GRUPO_B_LOGISTICA_MARKETING) else "A"
+    # Marketing solo en MINCA / BURITACA
     if any(p.upper() == prog for p in PROGRAMAS_GRUPO_B["MARKETING"]):
-        return "B"
+        return "B" if _es_sede_valida(sede, SEDES_GRUPO_B_LOGISTICA_MARKETING) else "A"
     return "A"
 
 

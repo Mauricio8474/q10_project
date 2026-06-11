@@ -44,6 +44,7 @@ PROGRAMAS_GRUPO_B = {
     "MARKETING": _gb["marketing"],
 }
 SEDES_GRUPO_B_MODA = _gb["sedes_moda"]
+SEDES_GRUPO_B_LOGISTICA_MARKETING = _gb["sedes_logistica_marketing"]
 SEMESTRE_GRUPO_B = _gb["semestre"]
 
 CORTES_A = pd.to_datetime(_SEMESTRE["cortes_a"])

@@ -49,6 +49,7 @@
     "logistica": ["TECNOLOGÍA EN GESTIÓN DE OPERACIONES LOGÍSTICAS"],
     "marketing": ["TECNOLOGÍA EN MARKETING DIGITAL"],
     "sedes_moda": ["INEM"],
+    "sedes_logistica_marketing": ["MINCA", "BURITACA"],
     "semestre": "Semestre 01"
   },
   "cortes_a": ["2026-02-01", "2026-03-15", "2026-04-19", "2026-05-30"],
