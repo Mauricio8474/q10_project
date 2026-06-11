@@ -1,4 +1,6 @@
+import json
 import os
+from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -13,85 +15,40 @@ HEADERS = {
     "api-key": API_KEY
 }
 
-PERIODOS = [6]
-
-PROGRAMAS = [
-    "Tecnolog-Logis-Bas",
-    "Tecnolog-Gastro-Inem",
-    "Tecnolog-Mkt-Bas",
-    "Tecnolog-Turis-Bur",
-    "Tecnolog-Logis-Inem",
-    "Tecnolog-Mkt-Bur",
-    "Pro-Arq-Inem",
-    "Pro-Mod-Inem",
-    "Tecnolog-Mod-Inem",
-    "Pro-Agro-Inem",
-    "Pro-Datos-Inem",
-    "Pro-Agua-Inem",
-    "Pro-Elec-Inem",
-    "Pro-Topo-Inem",
-    "Tecnolog-Datos-Inem",
-    "Tecnolog-Arq-Inem",
-    "Tecnolog-Agro-Inem",
-    "Tecnolog-Elec-Inem",
-    "Tecnolog-Agua-Inem",
-    "Tecnolog-Turis-Inem",
-    "Tecnolog-Topo-Inem",
-    "Tecnolog-Mkt-Inem",
-    "Tecnolog-Logis",
-    "Tecnolog-Gastro",
-    "Tecnolog-Turis",
-    "Tecnolog-Mkt",
-    "Tecnolog-Gastro-Ine",
-    "Tecnolog-Turis-Ine",
-    "Tecnolog-Turis-Min",
-    "Tecnolog-Mkt-Min",
-    "Tecnolog-Logis-Pes",
-    "Tecnolog-Gastro-Pes",
-    "Tecnolog-Mkt-Pes"
-]
-
 # ---------------------------------------------------
-# INASISTENCIAS — Rango de fechas
+# Configuración del semestre (cambia cada periodo)
 # ---------------------------------------------------
 
-# ---------------------------------------------------
-# PROGRAMAS EXCLUIDOS DE LA ANALÍTICA
-# ---------------------------------------------------
+_CONFIG_PATH = Path(__file__).resolve().parent.parent / "semestre.json"
 
-EXCLUIR_PROGRAMAS = [
-    "TecLab-AuxAdmin",
-    "TecLab-MarkDig",
-    "CIES-Univ",
-    "CIES-RAF-FICAT",
-    "DiploHASPS-1",
-    "DiploHCNSPS-1",
-]
+with open(_CONFIG_PATH, encoding="utf-8") as _f:
+    _SEMESTRE = json.load(_f)
 
-FECHA_INICIO_INASISTENCIAS = "2026-02-01"
+PERIODOS = [_SEMESTRE["periodo"]]
+
+PROGRAMAS = _SEMESTRE["programas"]
+
+EXCLUIR_PROGRAMAS = _SEMESTRE["excluir_programas"]
+
+FECHA_INICIO_INASISTENCIAS = _SEMESTRE["fecha_inicio_inasistencias"]
 FECHA_FIN_INASISTENCIAS = None  # Se asigna en runtime con datetime.now()
 
 # ---------------------------------------------------
 # INASISTENCIAS — Grupos con fechas diferenciadas
 # ---------------------------------------------------
 
-PROGRAMAS_GRUPO_B = ["TECNOLOGÍA EN GESTIÓN DE PRODUCCIÓN DE MODAS"]
-SEDES_GRUPO_B = ["MINCA", "BURITACA"]
+_gb = _SEMESTRE["grupo_b"]
+PROGRAMAS_GRUPO_B = {
+    "MODA": _gb["moda"],
+    "LOGISTICA": _gb["logistica"],
+    "MARKETING": _gb["marketing"],
+}
+SEDES_GRUPO_B_MODA = _gb["sedes_moda"]
+SEMESTRE_GRUPO_B = _gb["semestre"]
 
-CORTES_A = pd.to_datetime([
-    "2026-02-01", "2026-04-02", "2026-05-14", "2026-06-26"
-])
-ETIQUETAS_A = [
-    "Seguimiento 1 (01 Feb – 01 Abr)",
-    "Seguimiento 2 (02 Abr – 13 May)",
-    "Seguimiento 3 (14 May – 25 Jun)",
-]
+CORTES_A = pd.to_datetime(_SEMESTRE["cortes_a"])
+CORTES_B = pd.to_datetime(_SEMESTRE["cortes_b"])
 
-CORTES_B = pd.to_datetime([
-    "2026-04-06", "2026-05-10", "2026-06-14", "2026-07-26"
-])
-ETIQUETAS_B = [
-    "Seguimiento 1 (06 Abr – 09 May)",
-    "Seguimiento 2 (10 May – 13 Jun)",
-    "Seguimiento 3 (14 Jun – 25 Jul)",
-]
+_etiq = _SEMESTRE["etiquetas_seguimiento"]
+ETIQUETAS_A = _etiq
+ETIQUETAS_B = _etiq

@@ -4,7 +4,8 @@ import pandas as pd
 
 from .config import (
     PROGRAMAS_GRUPO_B,
-    SEDES_GRUPO_B,
+    SEDES_GRUPO_B_MODA,
+    SEMESTRE_GRUPO_B,
     CORTES_A,
     CORTES_B,
     ETIQUETAS_A,
@@ -14,13 +15,27 @@ from .config import (
 logger = logging.getLogger(__name__)
 
 
-def _asignar_grupo_estudiante(programa, sede):
-    if pd.isna(programa) and pd.isna(sede):
+def _asignar_grupo_estudiante(programa, sede, nombre_nivel=None):
+    if pd.isna(programa):
         return "A"
-    if (
-        (pd.notna(programa) and programa.strip().upper() in [p.upper() for p in PROGRAMAS_GRUPO_B])
-        or (pd.notna(sede) and sede.strip().upper() in [s.upper() for s in SEDES_GRUPO_B])
-    ):
+    prog = programa.strip().upper()
+    # Semestre 1 check
+    es_semestre_1 = (
+        pd.notna(nombre_nivel)
+        and nombre_nivel.strip().upper() == SEMESTRE_GRUPO_B.upper()
+    )
+    if not es_semestre_1:
+        return "A"
+    # Moda en INEM
+    if any(p.upper() == prog for p in PROGRAMAS_GRUPO_B["MODA"]):
+        if pd.notna(sede) and sede.strip().upper() in [s.upper() for s in SEDES_GRUPO_B_MODA]:
+            return "B"
+        return "A"
+    # Logística
+    if any(p.upper() == prog for p in PROGRAMAS_GRUPO_B["LOGISTICA"]):
+        return "B"
+    # Marketing
+    if any(p.upper() == prog for p in PROGRAMAS_GRUPO_B["MARKETING"]):
         return "B"
     return "A"
 
@@ -56,7 +71,7 @@ def enriquecer_inasistencias(df_detalle, df_estudiantes):
 
     df["Grupo"] = df.apply(
         lambda r: _asignar_grupo_estudiante(
-            r.get("Nombre_programa_limpio"), r.get("Sede")
+            r.get("Nombre_programa_limpio"), r.get("Sede"), r.get("Nombre_nivel")
         ),
         axis=1,
     )
