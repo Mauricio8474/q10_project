@@ -43,6 +43,9 @@ Los comandos son idénticos en ambos sistemas:
 # Ejecutar todos los módulos en orden
 python main.py
 
+# Pipeline completo sin notas (mucho más rápido)
+python main.py rapido
+
 # O ejecutar módulos individuales
 python main.py cursos        # Catálogo de cursos
 python main.py cancelados    # Cancelaciones + edades
@@ -68,6 +71,7 @@ jupyter notebook notebooks/
 ```
 q10_project/
 ├── main.py                     # Orquestador ETL (CLI)
+├── semestre.json               # Config externa: periodo, cortes, programas, grupo B
 ├── requirements.txt
 ├── .env.example
 ├── README.md
@@ -94,12 +98,13 @@ q10_project/
 │   ├── bajo_rendimiento.ipynb        # Nota < 3.0 por área/asignatura/curso + estudiantes_revisión
 │   └── dashboard_informe.ipynb       # (futuro)
 │
-├── tests/                      # 44 tests
+├── tests/                      # 66 tests
 │   ├── test_extract_edades.py
 │   ├── test_utils.py
 │   ├── test_transform_notas.py
 │   ├── test_consolidar.py
-│   └── test_analisis_inasistencias.py
+│   ├── test_analisis_inasistencias.py
+│   └── test_reporte_bajo_rendimiento.py
 │
 └── data/
     ├── raw/                    # Datos crudos
@@ -117,23 +122,48 @@ q10_project/
         └── resumen_informe.xlsx
 ```
 
-## Configuración (`src/config.py`)
+## Configuración
+
+### `semestre.json` (cambia cada periodo)
+
+Archivo JSON externo con toda la configuración específica del semestre. Se modifica sin tocar código.
+
+| Campo | Descripción |
+|---|---|
+| `periodo` | Número del periodo académico (ej: 6) |
+| `programas` | Códigos API de programas tecnológicos USM |
+| `excluir_programas` | Programas excluidos (TecLab, CIES, Diplo) |
+| `fecha_inicio_inasistencias` | Inicio del rango (`"2026-02-01"`) |
+| `grupo_b.moda` | Nombres de programa de Moda para calendario B |
+| `grupo_b.logistica` | Nombres de programa de Logística para calendario B |
+| `grupo_b.marketing` | Nombres de programa de Marketing para calendario B |
+| `grupo_b.sedes_moda` | Sedes donde Moda es Grupo B (`["INEM"]`) |
+| `grupo_b.sedes_logistica_marketing` | Sedes donde Logística/Marketing son Grupo B (`["MINCA", "BURITACA"]`) |
+| `grupo_b.semestre` | Semestre que aplica para Grupo B (`"Semestre 01"`) |
+| `cortes_a` | Fechas de corte calendario A |
+| `cortes_b` | Fechas de corte calendario B |
+| `etiquetas_seguimiento` | Etiquetas de seguimiento (`["Seguimiento 1", ...]`) |
+
+### `src/config.py`
 
 | Variable | Descripción |
 |---|---|
 | `API_KEY` | Clave de autenticación Q10 (desde `.env`) |
 | `BASE_URL` | `https://api.q10.com/v1` |
-| `PERIODOS` | `[6]` — solo periodo 6 |
-| `PROGRAMAS` | 33 códigos de programa tecnológico USM |
-| `EXCLUIR_PROGRAMAS` | Programas excluidos de la analítica (TecLab, CIES, Diplo) |
-| `PROGRAMAS_GRUPO_B` | Programas con fechas de corte del grupo B |
-| `SEDES_GRUPO_B` | Sedes con fechas de corte del grupo B |
-| `FECHA_INICIO_INASISTENCIAS` | `"2026-02-01"` — inicio del rango |
+| `PERIODOS` | Cargado desde `semestre.json` |
+| `PROGRAMAS` | Cargado desde `semestre.json` |
+| `EXCLUIR_PROGRAMAS` | Cargado desde `semestre.json` |
+| `PROGRAMAS_GRUPO_B` | Cargado desde `semestre.json` |
+| `SEDES_GRUPO_B_MODA` | Sedes de Moda grupo B |
+| `SEDES_GRUPO_B_LOGISTICA_MARKETING` | Sedes de Logística/Marketing grupo B |
+| `SEMESTRE_GRUPO_B` | Semestre que aplica grupo B |
+| `CORTES_A` / `CORTES_B` | Fechas de corte |
+| `FECHA_INICIO_INASISTENCIAS` | Cargado desde `semestre.json` |
 
 ## Arquitectura del pipeline
 
 ```
-main.py  (CLI: python main.py [módulo])
+main.py  (CLI: python main.py [módulo] — disponible: todo, rapido, cursos, cancelados, notas, estudiantes, inasistencias, consolidar, excel, reporte)
 │
 ├── cursos
 │   └── GET /cursos → data/raw/cursos.parquet
@@ -149,8 +179,8 @@ main.py  (CLI: python main.py [módulo])
 │   ├── transform: extrae primeros 3 parámetros padre, renombra a
 │   │   Primer/Segundo/Tercer Seguimiento, calcula Grupo y Nota final (30/30/40)
 │   ├── limpia Nombre_asignatura (quita prefijo "{codigo}-")
-│   └── filtra estudiantes que aparecen en cancelados (Numero_identificacion)
-│       → data/raw/notas_pivot.parquet
+│   ├── filtra estudiantes que aparecen en cancelados (Numero_identificacion)
+│   └── → data/raw/notas_pivot.parquet
 │
 ├── estudiantes
 │   └── GET /estudiantes?Periodo={id} (con paginación)
@@ -160,16 +190,20 @@ main.py  (CLI: python main.py [módulo])
 │   ├── GET /inasistencias?Fecha_inicio={}&Fecha_fin={}
 │   ├── filtra módulos no relevantes (CIES, TecLab)
 │   ├── limpia Nombre_modulo (quita prefijo numérico)
-│   └── enriquece con Sede, Programa, Semestre, Grupo (A/B), Seguimiento
-│       → data/raw/inasistencias_{agregado,detalle,enriquecido}.parquet   (34 columnas de clasificación)
+│   ├── enriquece con Sede, Programa, Semestre, Grupo (A/B), Seguimiento
+│   │   Grupo B = Semestre 01 + (Moda en INEM | Logística en MINCA/BURITACA | Marketing en MINCA/BURITACA)
+│   └── → data/raw/inasistencias_{agregado,detalle,enriquecido}.parquet
 │
 ├── consolidar
 │   ├── merge: notas_pivot + clasificación estudiantes (por Numero_identificacion)
-│   └── → data/processed/consolidado_notas.parquet  (1.043 columnas)
+│   └── → data/processed/consolidado_notas.parquet
 │       → data/processed/resumen_informe.xlsx       (5 hojas de KPIs)
 │
-└── excel
-    └── convierte datasets a .xlsx (notas_pivot partido en 6 hojas)
+├── excel
+│   └── convierte datasets a .xlsx (notas_pivot partido en 6 hojas)
+│
+└── reporte
+    └── genera bajo_rendimiento.xlsx (4 hojas) + CSVs por área/asignatura/curso/estudiantes
 ```
 
 ## Clasificación de estudiantes
@@ -213,7 +247,7 @@ Estas dimensiones se fusionan con la tabla de notas durante la consolidación, l
 ## Tests
 
 ```bash
-pytest tests/ -v    # 44 tests
+pytest tests/ -v    # 66 tests
 ```
 
 ---
