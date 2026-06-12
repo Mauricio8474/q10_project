@@ -114,6 +114,27 @@ def cmd_reporte_inasistencias():
     generar_reporte_inasistencias()
 
 
+def cmd_conteo():
+    logger.info("=== GENERANDO REPORTE DE CONTEO DE ESTUDIANTES ===")
+
+    df = pd.read_csv("data/raw/estudiantes.csv")
+    from pathlib import Path
+
+    tabla = df.groupby(["Nombre_programa_limpio", "Sede", "Nombre_nivel"]).agg(
+        Matriculados=("Numero_identificacion", "count"),
+        Activos=("Estado", lambda x: (x == "Activo").sum()),
+        Cancelados=("Estado", lambda x: (x == "Cancelado").sum()),
+    ).reset_index()
+
+    Path("data/reportes").mkdir(parents=True, exist_ok=True)
+    tabla.to_csv("data/reportes/conteo_estudiantes.csv", index=False, encoding="utf-8-sig")
+    logger.info("CSV guardado: data/reportes/conteo_estudiantes.csv (%s filas)", len(tabla))
+
+    with pd.ExcelWriter("data/reportes/conteo_estudiantes.xlsx", engine="openpyxl") as writer:
+        tabla.to_excel(writer, sheet_name="conteo", index=False)
+    logger.info("Excel guardado: data/reportes/conteo_estudiantes.xlsx")
+
+
 def cmd_todo():
     cmd_cursos()
     cmd_cancelados()
@@ -124,6 +145,7 @@ def cmd_todo():
     cmd_excel()
     cmd_reporte()
     cmd_reporte_inasistencias()
+    cmd_conteo()
 
 
 def cmd_rapido():
@@ -136,6 +158,7 @@ def cmd_rapido():
     cmd_excel()
     cmd_reporte()
     cmd_reporte_inasistencias()
+    cmd_conteo()
 
 
 def main():
@@ -144,7 +167,7 @@ def main():
         "comando",
         nargs="?",
         default="todo",
-        choices=["cancelados", "cursos", "notas", "inasistencias", "estudiantes", "consolidar", "excel", "reporte", "reporte_inasistencias", "todo", "rapido"],
+        choices=["cancelados", "cursos", "notas", "inasistencias", "estudiantes", "consolidar", "excel", "reporte", "reporte_inasistencias", "conteo", "todo", "rapido"],
         help="Módulo a ejecutar (default: todo)"
     )
 
@@ -160,6 +183,7 @@ def main():
         "excel": cmd_excel,
         "reporte": cmd_reporte,
         "reporte_inasistencias": cmd_reporte_inasistencias,
+        "conteo": cmd_conteo,
         "todo": cmd_todo,
         "rapido": cmd_rapido,
     }[args.comando]()
