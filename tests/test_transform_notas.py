@@ -79,17 +79,21 @@ class TestAsignarGrupo:
 
 class TestCalcularNotaFinal:
 
-    def test_notas_completas(self):
+    def test_notas_completas_grupo_a(self):
         row = {"Primer Seguimiento": 4.0, "Segundo Seguimiento": 3.0, "Tercer Seguimiento": 5.0}
-        assert _calcular_nota_final(row) == pytest.approx(4.0 * 0.3 + 3.0 * 0.3 + 5.0 * 0.4)
+        assert _calcular_nota_final(row, "A") == pytest.approx(4.0 * 0.3 + 3.0 * 0.3 + 5.0 * 0.4)
 
-    def test_notas_none(self):
+    def test_notas_none_grupo_a(self):
         row = {"Primer Seguimiento": None, "Segundo Seguimiento": None, "Tercer Seguimiento": None}
-        assert _calcular_nota_final(row) == 0.0
+        assert _calcular_nota_final(row, "A") == 0.0
 
-    def test_notas_parciales(self):
+    def test_notas_parciales_grupo_a(self):
         row = {"Primer Seguimiento": 4.0, "Segundo Seguimiento": None, "Tercer Seguimiento": 5.0}
-        assert _calcular_nota_final(row) == pytest.approx(4.0 * 0.3 + 0 + 5.0 * 0.4)
+        assert _calcular_nota_final(row, "A") == pytest.approx(4.0 * 0.3 + 0 + 5.0 * 0.4)
+
+    def test_grupo_b_solo_primer(self):
+        row = {"Primer Seguimiento": 4.5, "Segundo Seguimiento": 3.0, "Tercer Seguimiento": 5.0}
+        assert _calcular_nota_final(row, "B") == 4.5
 
 
 class TestLimpiarNombreAsignatura:

@@ -32,7 +32,9 @@ def _limpiar_nombre_asignatura(nombre, codigo):
     return nombre_str[len(prefijo):] if nombre_str.startswith(prefijo) else nombre
 
 
-def _calcular_nota_final(row):
+def _calcular_nota_final(row, grupo):
+    if grupo == "B":
+        return row.get("Primer Seguimiento") or 0
     return (
         (row.get("Primer Seguimiento") or 0) * 0.3
         + (row.get("Segundo Seguimiento") or 0) * 0.3
@@ -53,9 +55,14 @@ def transformar_notas(df_raw):
     )
 
     df_pivot["Grupo"] = df_pivot["Nombre_curso"].apply(_asignar_grupo)
+
+    mask_b = df_pivot["Grupo"] == "B"
+    df_pivot.loc[mask_b, "Segundo Seguimiento"] = None
+    df_pivot.loc[mask_b, "Tercer Seguimiento"] = None
+
     cols_seg = ["Primer Seguimiento", "Segundo Seguimiento", "Tercer Seguimiento"]
-    df_pivot["Nota final"] = (
-        df_pivot[cols_seg].fillna(0).mul([0.3, 0.3, 0.4]).sum(axis=1)
+    df_pivot["Nota final"] = df_pivot.apply(
+        lambda r: _calcular_nota_final(r, r["Grupo"]), axis=1
     )
     df_pivot["Nombre_asignatura"] = df_pivot.apply(
         lambda r: _limpiar_nombre_asignatura(r["Nombre_asignatura"], r["Codigo_asignatura"]), axis=1

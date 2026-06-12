@@ -61,7 +61,7 @@ def generar_reporte_bajo_rendimiento():
         "bajo_rendimiento_asignatura": _tabla_agrupada(df, ["Codigo_asignatura", "Nombre_asignatura", "Area"]),
         "bajo_rendimiento_curso": _tabla_agrupada(df, ["Nombre_curso", "Sede", "Nombre_programa_limpio", "Area"]),
         "estudiantes_revision": df[df["condicion_de_alerta"]][
-            ["Nombre_completo_estudiante", "Numero_identificacion_estudiante", "Sede", "Nombre_programa_limpio", "Nombre_asignatura", "Nota final"]
+            ["Nombre_completo_estudiante", "Numero_identificacion_estudiante", "Sede", "Nombre_programa_limpio", "Nombre_asignatura", "Grupo", "Primer Seguimiento", "Segundo Seguimiento", "Tercer Seguimiento", "Nota final"]
         ].drop_duplicates().reset_index(drop=True),
     }
 
