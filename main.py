@@ -120,7 +120,7 @@ def cmd_conteo():
     df = pd.read_csv("data/raw/estudiantes.csv")
     from pathlib import Path
 
-    tabla = df.groupby(["Nombre_programa_limpio", "Sede", "Nombre_nivel", "Grupo"]).agg(
+    tabla = df.groupby(["Nombre_programa_limpio", "Sede", "Nombre_nivel"]).agg(
         Matriculados=("Numero_identificacion", "count"),
         Activos=("Estado", lambda x: (x == "Activo").sum()),
         Cancelados=("Estado", lambda x: (x == "Cancelado").sum()),
