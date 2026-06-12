@@ -31,7 +31,6 @@ PROGRAMAS = _SEMESTRE["programas"]
 EXCLUIR_PROGRAMAS = _SEMESTRE["excluir_programas"]
 
 FECHA_INICIO_INASISTENCIAS = _SEMESTRE["fecha_inicio_inasistencias"]
-FECHA_FIN_INASISTENCIAS = None  # Se asigna en runtime con datetime.now()
 
 # ---------------------------------------------------
 # INASISTENCIAS — Grupos con fechas diferenciadas
@@ -50,6 +49,5 @@ SEMESTRE_GRUPO_B = _gb["semestre"]
 CORTES_A = pd.to_datetime(_SEMESTRE["cortes_a"])
 CORTES_B = pd.to_datetime(_SEMESTRE["cortes_b"])
 
-_etiq = _SEMESTRE["etiquetas_seguimiento"]
-ETIQUETAS_A = _etiq
-ETIQUETAS_B = _etiq
+ETIQUETAS_A = _SEMESTRE["etiquetas_seguimiento"]
+ETIQUETAS_B = ETIQUETAS_A[:]

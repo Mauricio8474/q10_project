@@ -31,6 +31,10 @@ def obtener_inasistencias(fecha_inicio, fecha_fin, limit=5000):
             params=params
         )
 
+        if response is None:
+            logger.warning("Inasistencias | Offset %s | Sin respuesta — abortando", offset)
+            break
+
         logger.info("Inasistencias | Offset %s | Status %s", offset, response.status_code)
 
         if response.status_code != 200:

@@ -36,6 +36,10 @@ def obtener_estudiantes(periodo, limit=5000):
             params=params
         )
 
+        if response is None:
+            logger.warning("Estudiantes periodo %s | Offset %s | Sin respuesta — abortando", periodo, offset)
+            break
+
         logger.info(
             "Estudiantes periodo %s | Offset %s | Status %s",
             periodo, offset, response.status_code

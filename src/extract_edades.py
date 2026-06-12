@@ -25,11 +25,14 @@ def obtener_datos_estudiante(codigo_estudiante: str, codigo_programa: str = None
             requests.get, url,
             headers=HEADERS, params=params
         )
+        if response is None:
+            logger.warning("Sin respuesta para estudiante %s", codigo_estudiante)
+            return {}
         if response.status_code != 200:
             logger.warning("Status %s para estudiante %s", response.status_code, codigo_estudiante)
             return {}
         return response.json()
-    except Exception as e:
+    except (requests.RequestException, ValueError, TypeError, KeyError) as e:
         logger.error("Error al consultar estudiante %s: %s", codigo_estudiante, e)
         return {}
 
