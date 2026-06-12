@@ -1,8 +1,8 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pandas as pd
 import requests
-import time
 
 from .config import BASE_URL, HEADERS, PERIODOS
 from .utils import request_with_retry, guardar_parquet
@@ -56,15 +56,14 @@ def ejecutar_extraccion_notas(df_cursos=None):
         return pd.DataFrame()
 
     registros = []
+    total = len(cursos_ids)
 
-    for i, curso_id in enumerate(cursos_ids):
+    def procesar_curso(curso_id):
         data = obtener_notas_curso(curso_id)
-
         if data is None:
-            continue
-
+            return []
         cursos_lista = data if isinstance(data, list) else [data]
-
+        filas = []
         for curso_data in cursos_lista:
             curso_info = {
                 "Consecutivo_curso": curso_data.get("Consecutivo_curso"),
@@ -80,7 +79,6 @@ def ejecutar_extraccion_notas(df_cursos=None):
                 "Nombre_completo_docente": curso_data.get("Nombre_completo_docente"),
                 "Numero_identificacion_docente": curso_data.get("Numero_identificacion_docente"),
             }
-
             for est in curso_data.get("Estudiantes", []):
                 fila = {**curso_info}
                 fila["Codigo_matricula"] = est.get("Codigo_matricula")
@@ -94,12 +92,16 @@ def ejecutar_extraccion_notas(df_cursos=None):
                 fila["Estudiante_formalizado"] = est.get("Estudiante_formalizado")
                 fila["Observaciones"] = est.get("Observaciones")
                 fila["Parametros_evaluacion"] = est.get("Parametros_evaluacion")
-                registros.append(fila)
+                filas.append(fila)
+        return filas
 
-        if (i + 1) % 50 == 0 or (i + 1) == len(cursos_ids):
-            logger.info("  Notas: %s/%s cursos procesados", i + 1, len(cursos_ids))
-
-        time.sleep(0.1)
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futuros = {executor.submit(procesar_curso, cid): cid for cid in cursos_ids}
+        for i, futuro in enumerate(as_completed(futuros), 1):
+            filas = futuro.result()
+            registros.extend(filas)
+            if i % 50 == 0 or i == total:
+                logger.info("  Notas: %s/%s cursos procesados", i, total)
 
     df = pd.DataFrame(registros)
 

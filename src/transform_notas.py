@@ -27,37 +27,36 @@ def _asignar_grupo(nombre_curso):
 def _limpiar_nombre_asignatura(nombre, codigo):
     if pd.isna(nombre) or pd.isna(codigo):
         return nombre
-    nombre = str(nombre)
+    nombre_str = str(nombre)
     prefijo = str(codigo) + "-"
-    if nombre.startswith(prefijo):
-        return nombre[len(prefijo):]
-    return nombre
+    return nombre_str[len(prefijo):] if nombre_str.startswith(prefijo) else nombre
 
 
 def _calcular_nota_final(row):
-    p1 = row.get("Primer Seguimiento") or 0
-    p2 = row.get("Segundo Seguimiento") or 0
-    p3 = row.get("Tercer Seguimiento") or 0
-    return p1 * 0.3 + p2 * 0.3 + p3 * 0.4
+    return (
+        (row.get("Primer Seguimiento") or 0) * 0.3
+        + (row.get("Segundo Seguimiento") or 0) * 0.3
+        + (row.get("Tercer Seguimiento") or 0) * 0.4
+    )
 
 
 def transformar_notas(df_raw):
 
     logger.info("=== TRANSFORMANDO NOTAS (pivot de seguimientos) ===")
 
-    filas_temp = []
+    df_pivot = df_raw.copy()
 
-    for _, row in df_raw.iterrows():
-        seg = _extraer_seguimientos(row.get("Parametros_evaluacion"))
-
-        fila = row.drop("Parametros_evaluacion").to_dict()
-        fila.update(seg)
-        filas_temp.append(fila)
-
-    df_pivot = pd.DataFrame(filas_temp)
+    seguimientos = df_pivot["Parametros_evaluacion"].apply(_extraer_seguimientos)
+    df_pivot = pd.concat(
+        [df_pivot.drop(columns=["Parametros_evaluacion"]), seguimientos.apply(pd.Series)],
+        axis=1,
+    )
 
     df_pivot["Grupo"] = df_pivot["Nombre_curso"].apply(_asignar_grupo)
-    df_pivot["Nota final"] = df_pivot.apply(_calcular_nota_final, axis=1)
+    cols_seg = ["Primer Seguimiento", "Segundo Seguimiento", "Tercer Seguimiento"]
+    df_pivot["Nota final"] = (
+        df_pivot[cols_seg].fillna(0).mul([0.3, 0.3, 0.4]).sum(axis=1)
+    )
     df_pivot["Nombre_asignatura"] = df_pivot.apply(
         lambda r: _limpiar_nombre_asignatura(r["Nombre_asignatura"], r["Codigo_asignatura"]), axis=1
     )

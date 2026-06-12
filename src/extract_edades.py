@@ -1,7 +1,8 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-import requests
 import pandas as pd
+import requests
 import time
 from datetime import date
 from .config import BASE_URL, HEADERS
@@ -68,44 +69,49 @@ def calcular_edad(fecha_nacimiento_str: str) -> int | None:
 # ENRIQUECIMIENTO DEL DATAFRAME
 # ---------------------------------------------------
 
-def agregar_edades(df: pd.DataFrame) -> pd.DataFrame:
-    fechas, edades, generos = [], [], []
-    total = len(df)
+def _fetch_estudiante(codigo, programa, cache):
+    if codigo in cache:
+        return cache[codigo]
+    datos = obtener_datos_estudiante(codigo, programa)
+    cache[codigo] = datos
+    return datos
 
-    # Caché para no consultar el mismo estudiante dos veces
+
+def agregar_edades(df: pd.DataFrame, max_workers=5) -> pd.DataFrame:
+    logger.info("Consultando edades de %s estudiantes...", len(df))
+
+    codigos = df[["Codigo_estudiante", "Codigo_programa"]].dropna(subset="Codigo_estudiante").to_dict("records")
+    total = len(codigos)
     cache = {}
+    resultados = []
 
-    for i, row in df.iterrows():
-        codigo_estudiante = str(row.get("Codigo_estudiante", "")).strip()
-        codigo_programa   = str(row.get("Codigo_programa", "")).strip() or None
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futuros = {
+            executor.submit(
+                _fetch_estudiante,
+                str(r["Codigo_estudiante"]).strip(),
+                str(r.get("Codigo_programa", "")).strip() or None,
+                cache,
+            ): r for r in codigos
+        }
+        for i, futuro in enumerate(as_completed(futuros), 1):
+            datos = futuro.result()
+            resultados.append(datos)
+            if i % 50 == 0 or i == total:
+                logger.info("[%s/%s] estudiantes procesados", i, total)
 
-        if not codigo_estudiante:
-            fechas.append(None)
-            edades.append(None)
-            generos.append(None)
-            continue
-
-        if codigo_estudiante not in cache:
-            datos = obtener_datos_estudiante(codigo_estudiante, codigo_programa)
-            cache[codigo_estudiante] = datos
-            time.sleep(0.15)
-        else:
-            datos = cache[codigo_estudiante]
-
-        fecha  = datos.get("Fecha_nacimiento") or None
-        genero = datos.get("Genero") or None
-        edad   = calcular_edad(fecha)
-
-        fechas.append(fecha)
-        edades.append(edad)
-        generos.append(genero)
-
-        if (i + 1) % 50 == 0 or (i + 1) == total:
-            logger.info("[%s/%s] %s → Edad: %s | Género: %s", i + 1, total, codigo_estudiante, edad, genero)
+    map_cache = {}
+    for r in codigos:
+        c = str(r["Codigo_estudiante"]).strip()
+        map_cache[c] = cache.get(c, {})
 
     df = df.copy()
-    df["Fecha_nacimiento"] = fechas
-    df["Edad"]             = edades
-    df["Genero"]           = generos
+    df["Fecha_nacimiento"] = df["Codigo_estudiante"].apply(
+        lambda c: map_cache.get(str(c).strip(), {}).get("Fecha_nacimiento")
+    )
+    df["Edad"] = df["Fecha_nacimiento"].apply(calcular_edad)
+    df["Genero"] = df["Codigo_estudiante"].apply(
+        lambda c: map_cache.get(str(c).strip(), {}).get("Genero")
+    )
 
     return df

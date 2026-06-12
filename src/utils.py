@@ -1,10 +1,13 @@
 import logging
+import random
 import time
 from pathlib import Path
 from datetime import datetime
 
 import pandas as pd
 import requests
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------
 # LOGGING
@@ -21,6 +24,9 @@ def setup_logging(nivel=logging.INFO):
 # REINTENTOS EN PETICIONES HTTP
 # ---------------------------------------------------
 
+def _backoff(base, intento):
+    return base * (2 ** intento) + random.uniform(0, 1)
+
 def request_with_retry(func, *args, max_retries=3, delay=1, **kwargs):
     for intento in range(max_retries):
         try:
@@ -30,7 +36,7 @@ def request_with_retry(func, *args, max_retries=3, delay=1, **kwargs):
                     "Status %s — reintento %s/%s",
                     response.status_code, intento + 1, max_retries
                 )
-                time.sleep(delay * (2 ** intento))
+                time.sleep(_backoff(delay, intento))
                 continue
             return response
         except (requests.ConnectionError, requests.Timeout) as e:
@@ -38,14 +44,12 @@ def request_with_retry(func, *args, max_retries=3, delay=1, **kwargs):
                 "Error de conexión: %s — reintento %s/%s",
                 e, intento + 1, max_retries
             )
-            time.sleep(delay * (2 ** intento))
+            time.sleep(_backoff(delay, intento))
     logger.error(
         "Fallaron los %s intentos para %s — devolviendo None",
         max_retries, func.__name__
     )
     return None
-
-logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------
 # CREAR DIRECTORIOS
