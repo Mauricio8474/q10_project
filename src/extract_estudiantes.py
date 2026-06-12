@@ -98,6 +98,21 @@ def ejecutar_extraccion_estudiantes():
     except FileNotFoundError:
         logger.warning("notas_pivot.parquet no encontrado, se omite Grupo")
 
+    try:
+        cancelados = pd.read_parquet("data/raw/cancelados.parquet")
+        ids_cancelados = set(cancelados["Numero_identificacion"].unique())
+        df["Estado"] = df["Numero_identificacion"].apply(
+            lambda x: "Cancelado" if x in ids_cancelados else "Activo"
+        )
+        logger.info(
+            "Estado agregado: %s activos, %s cancelados",
+            (df["Estado"] == "Activo").sum(),
+            (df["Estado"] == "Cancelado").sum(),
+        )
+    except FileNotFoundError:
+        logger.warning("cancelados.parquet no encontrado, se omite Estado")
+        df["Estado"] = "Activo"
+
     antes = len(df)
     df = df[~df["Codigo_programa"].isin(EXCLUIR_PROGRAMAS)].copy()
     logger.info("Programas excluidos: %s registros eliminados", antes - len(df))
