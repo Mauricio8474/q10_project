@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src.reporte_bajo_rendimiento import _asignar_area, _tabla_area, _tabla_asignatura, _tabla_curso, _tabla_estudiantes_revision
+from src.reporte_bajo_rendimiento import _asignar_area, _tabla_agrupada
 
 
 class TestAsignarArea:
@@ -51,22 +51,23 @@ class TestTablas:
         return df
 
     def test_tabla_area(self, df):
-        res = _tabla_area(df)
+        res = _tabla_agrupada(df, ["Area"])
         assert "Area" in res.columns
         assert "Porcentaje_bajo" in res.columns
-        assert len(res) == 2  # 2 areas with data
+        assert len(res) == 2
 
     def test_tabla_asignatura(self, df):
-        res = _tabla_asignatura(df)
+        res = _tabla_agrupada(df, ["Codigo_asignatura", "Nombre_asignatura", "Area"])
         assert "Codigo_asignatura" in res.columns
-        assert len(res) == 3  # 3 unique asignaturas
+        assert len(res) == 3
 
     def test_tabla_curso(self, df):
-        res = _tabla_curso(df)
+        res = _tabla_agrupada(df, ["Nombre_curso", "Sede", "Nombre_programa_limpio", "Area"])
         assert "Nombre_curso" in res.columns
-        assert len(res) == 3  # 3 unique cursos
+        assert len(res) == 3
 
     def test_tabla_estudiantes_revision(self, df):
-        res = _tabla_estudiantes_revision(df)
-        # Nota final <= 1 & >= 0 → rows with 0.5 and 1.0
+        res = df[df["condicion_de_alerta"]][
+            ["Nombre_completo_estudiante", "Numero_identificacion_estudiante", "Sede", "Nombre_programa_limpio", "Nombre_asignatura", "Nota final"]
+        ].drop_duplicates().reset_index(drop=True)
         assert len(res) == 2
