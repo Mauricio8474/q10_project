@@ -4,6 +4,7 @@ import pytest
 from src.analisis_inasistencias import (
     _asignar_grupo_estudiante,
     _clasificar_seguimiento,
+    enriquecer_inasistencias,
 )
 
 
@@ -107,3 +108,69 @@ class TestClasificarSeguimiento:
 
     def test_borde_exacto_corte(self):
         assert _clasificar_seguimiento(pd.Timestamp("2026-03-15"), "A") == "Seguimiento 2"
+
+
+class TestEnriquecerInasistencias:
+
+    def test_filtra_sin_programa(self):
+        detalle = pd.DataFrame({
+            "Numero_identificacion_estudiante": ["1", "2", "3"],
+            "Fecha_inasistencia": pd.to_datetime(["2026-02-10", "2026-03-15", "2026-04-20"]),
+            "Cantidad_inasistencia": [2, 3, 1],
+            "Nombre_modulo": ["MOD1", "MOD2", "MOD1"],
+        })
+        estudiantes = pd.DataFrame({
+            "Numero_identificacion": ["1", "2", "3"],
+            "Nombre_programa_limpio": [None, "TECNOLOGÍA EN MARKETING DIGITAL", "TECNOLOGÍA EN GESTIÓN DE OPERACIONES LOGÍSTICAS"],
+            "Sede": [None, "MINCA", "BASTIDAS"],
+            "Nombre_nivel": [None, "Semestre 01", "Semestre 01"],
+        })
+        res = enriquecer_inasistencias(detalle, estudiantes)
+        # Estudiante 1 sin programa debe ser filtrado
+        assert len(res) == 2
+        assert "MINCA" in res["Sede"].values
+
+    def test_grupo_asignado(self):
+        detalle = pd.DataFrame({
+            "Numero_identificacion_estudiante": ["1"],
+            "Fecha_inasistencia": pd.to_datetime(["2026-04-15"]),
+            "Cantidad_inasistencia": [2],
+            "Nombre_modulo": ["MOD1"],
+        })
+        estudiantes = pd.DataFrame({
+            "Numero_identificacion": ["1"],
+            "Nombre_programa_limpio": ["TECNOLOGÍA EN MARKETING DIGITAL"],
+            "Sede": ["MINCA"],
+            "Nombre_nivel": ["Semestre 01"],
+        })
+        res = enriquecer_inasistencias(detalle, estudiantes)
+        assert res["Grupo"].values[0] == "B"
+
+    def test_seguimiento_asignado(self):
+        detalle = pd.DataFrame({
+            "Numero_identificacion_estudiante": ["1"],
+            "Fecha_inasistencia": pd.to_datetime(["2026-02-15"]),
+            "Cantidad_inasistencia": [1],
+            "Nombre_modulo": ["MOD1"],
+        })
+        estudiantes = pd.DataFrame({
+            "Numero_identificacion": ["1"],
+            "Nombre_programa_limpio": ["TECNOLOGÍA EN GESTIÓN DE OPERACIONES LOGÍSTICAS"],
+            "Sede": ["BASTIDAS"],
+            "Nombre_nivel": ["Semestre 01"],
+        })
+        res = enriquecer_inasistencias(detalle, estudiantes)
+        assert res["Seguimiento"].values[0] == "Seguimiento 1"
+
+    def test_sin_estudiantes_retorna_vacio(self):
+        detalle = pd.DataFrame({
+            "Numero_identificacion_estudiante": ["1"],
+            "Fecha_inasistencia": pd.to_datetime(["2026-02-15"]),
+            "Cantidad_inasistencia": [1],
+            "Nombre_modulo": ["MOD1"],
+        })
+        estudiantes = pd.DataFrame(columns=[
+            "Numero_identificacion", "Nombre_programa_limpio", "Sede", "Nombre_nivel"
+        ])
+        res = enriquecer_inasistencias(detalle, estudiantes)
+        assert len(res) == 0
