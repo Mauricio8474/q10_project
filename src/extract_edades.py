@@ -114,4 +114,14 @@ def agregar_edades(df: pd.DataFrame, max_workers=5) -> pd.DataFrame:
         lambda c: map_cache.get(str(c).strip(), {}).get("Genero")
     )
 
+    edad_valida = df["Edad"].dropna()
+    mask_atipica = df["Edad"].notna() & (df["Edad"] <= 0)
+    if mask_atipica.any():
+        mediana = edad_valida[edad_valida > 0].median()
+        logger.info(
+            "Edades atípicas (<=0): %s — reemplazadas por mediana %.0f",
+            mask_atipica.sum(), mediana
+        )
+        df.loc[mask_atipica, "Edad"] = mediana
+
     return df
