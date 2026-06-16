@@ -1,6 +1,7 @@
 import logging
 import re
 
+import numpy as np
 import pandas as pd
 
 from .config import EXCLUIR_PROGRAMAS
@@ -10,7 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 def _extraer_seguimientos(parametros_raw):
-    if not parametros_raw or not isinstance(parametros_raw, list):
+    if not isinstance(parametros_raw, (list, np.ndarray)):
+        return {}
+    if len(parametros_raw) == 0:
         return {}
 
     padres = [p for p in parametros_raw if p.get("Consecutivo_padre") is None]
@@ -34,11 +37,11 @@ def _limpiar_nombre_asignatura(nombre, codigo):
 
 def _calcular_nota_final(row, grupo):
     if grupo == "B":
-        return row.get("Primer Seguimiento") or 0
+        return row.get("Primer Seguimiento") if pd.notna(row.get("Primer Seguimiento")) else 0.0
     return (
-        (row.get("Primer Seguimiento") or 0) * 0.3
-        + (row.get("Segundo Seguimiento") or 0) * 0.3
-        + (row.get("Tercer Seguimiento") or 0) * 0.4
+        (row.get("Primer Seguimiento") if pd.notna(row.get("Primer Seguimiento")) else 0.0) * 0.3
+        + (row.get("Segundo Seguimiento") if pd.notna(row.get("Segundo Seguimiento")) else 0.0) * 0.3
+        + (row.get("Tercer Seguimiento") if pd.notna(row.get("Tercer Seguimiento")) else 0.0) * 0.4
     )
 
 
@@ -61,9 +64,10 @@ def transformar_notas(df_raw):
     df_pivot.loc[mask_b, "Tercer Seguimiento"] = None
 
     cols_seg = ["Primer Seguimiento", "Segundo Seguimiento", "Tercer Seguimiento"]
-    df_pivot["Nota final"] = df_pivot.apply(
-        lambda r: _calcular_nota_final(r, r["Grupo"]), axis=1
+    df_pivot["Nota final"] = (
+        df_pivot[cols_seg].fillna(0).mul([0.3, 0.3, 0.4]).sum(axis=1)
     )
+    df_pivot.loc[mask_b, "Nota final"] = df_pivot.loc[mask_b, "Primer Seguimiento"].fillna(0)
     df_pivot["Nombre_asignatura"] = df_pivot.apply(
         lambda r: _limpiar_nombre_asignatura(r["Nombre_asignatura"], r["Codigo_asignatura"]), axis=1
     )
