@@ -1,6 +1,6 @@
 # q10_project — ETL Académico USM
 
-Pipeline ETL que extrae datos académicos desde la **API Q10** (sistema de gestión académica) de la **Institución Universitaria de Santa Marta (USM)**: cancelaciones, rendimiento académico (notas), inasistencias, clasificación de estudiantes y catálogo de cursos. Los datos se limpian, transforman y consolidan para alimentar KPIs institucionales con segmentación por sede, programa, nivel, grupo y jornada.
+Pipeline ETL que extrae datos académicos desde la **API Q10** (sistema de gestión académica) de la **Institución Universitaria de Santa Marta (USM)**: cancelaciones, rendimiento académico (notas), inasistencias, clasificación de estudiantes y catálogo de cursos. Los datos se limpian, transforman y consolidan para alimentar KPIs institucionales con segmentación por sede, programa, nivel, calendario, grupo y jornada.
 
 ---
 
@@ -73,7 +73,7 @@ jupyter notebook notebooks/
 ```
 q10_project/
 ├── main.py                     # Orquestador ETL (CLI: todo, rapido, +10 módulos)
-├── semestre.json               # Config externa: periodo, cortes, programas, grupo B
+├── semestre.json               # Config externa: periodo, cortes, programas, calendario_2
 ├── requirements.txt
 ├── .env.example
 ├── README.md
@@ -83,37 +83,36 @@ q10_project/
 │   ├── utils.py                # logging, retry, guardar CSV/parquet
 │   ├── extract_cursos.py       # GET /cursos
 │   ├── extract_notas.py        # GET /evaluaciones/cuantitativo/notas
-│   ├── transform_notas.py      # Pivot seguimientos, Grupo, Nota final, limpia Nombre_asignatura
+│   ├── transform_notas.py      # Pivot seguimientos, Calendario (1/2), Nota final, limpia Nombre_asignatura
 │   ├── extract_inasistencias.py# GET /inasistencias
 │   ├── extract_cancelados.py   # GET /matriculas-canceladas
 │   ├── extract_edades.py       # GET /estudiantes/{codigo} (edad, género)
 │   ├── extract_estudiantes.py  # GET /estudiantes (clasificación)
-│   ├── analisis_inasistencias.py # Clasificación de inasistencias por grupo/seguimiento
-    │   ├── reporte_bajo_rendimiento.py # Tablas bajo rendimiento → CSV/Excel (4 hojas)
-    │   ├── reporte_inasistencias.py    # Tablas de inasistencias → CSV/Excel (8 hojas)
-    │   ├── consolidar.py           # Consolidación y KPIs
-    │   └── generar_excel.py        # Datasets a .xlsx
+│   ├── analisis_inasistencias.py # Clasificación de inasistencias por calendario/seguimiento
+│   ├── reporte_bajo_rendimiento.py # Tablas bajo rendimiento → CSV/Excel (4 hojas)
+│   ├── reporte_inasistencias.py    # Tablas de inasistencias → CSV/Excel (8 hojas)
+│   ├── consolidar.py           # Consolidación y KPIs
+│   └── generar_excel.py        # Datasets a .xlsx
 │
 ├── notebooks/
 │   ├── analisis_cancelados.ipynb
 │   ├── conteo_estudiantes.ipynb
 │   ├── inasistencias_por_seguimiento.ipynb
-    │   ├── bajo_rendimiento.ipynb        # Nota < 3.0 por área/asignatura/curso + estudiantes_revisión
-    │   │                                #   Incluye columnas individuales de seguimiento
-    │   │                                #   Grupo B: solo Seguimiento 1, Nota final = Seguimiento 1
-    │   ├── conteo_estudiantes.ipynb      # Conteo por programa/sede/semestre + Activos/Cancelados
-    │   ├── inasistencias_por_seguimiento.ipynb
-    │   └── dashboard_informe.ipynb       # (futuro)
+│   ├── bajo_rendimiento.ipynb        # Nota < 3.0 por área/asignatura/curso + estudiantes_revisión
+│   │                                  #   Incluye columnas individuales de seguimiento
+│   ├── conteo_estudiantes.ipynb      # Conteo por programa/sede/semestre + Activos/Cancelados
+│   ├── inasistencias_por_seguimiento.ipynb
+│   └── dashboard_informe.ipynb       # (futuro)
 │
-├── tests/                      # 84 tests
-    │   ├── conftest.py                 # Fixtures compartidos (df_inasistencias_muestra, df_notas_muestra, df_estudiantes_muestra)
-    │   ├── test_extract_edades.py
-    │   ├── test_utils.py
-    │   ├── test_transform_notas.py
-    │   ├── test_consolidar.py
-    │   ├── test_analisis_inasistencias.py
-    │   ├── test_reporte_bajo_rendimiento.py
-    │   └── test_reporte_inasistencias.py
+├── tests/                      # 99 tests
+│   ├── conftest.py                 # Fixtures compartidos (df_inasistencias_muestra, df_notas_muestra, df_estudiantes_muestra)
+│   ├── test_extract_edades.py
+│   ├── test_utils.py
+│   ├── test_transform_notas.py
+│   ├── test_consolidar.py
+│   ├── test_analisis_inasistencias.py
+│   ├── test_reporte_bajo_rendimiento.py
+│   └── test_reporte_inasistencias.py
 │
 └── data/
     ├── raw/                    # Datos crudos
@@ -146,12 +145,9 @@ Archivo JSON externo con toda la configuración específica del semestre. Se mod
 | `programas` | Códigos API de programas tecnológicos USM |
 | `excluir_programas` | Programas excluidos (TecLab, CIES, Diplo) |
 | `fecha_inicio_inasistencias` | Inicio del rango (`"2026-02-01"`) |
-| `grupo_b.moda` | Nombres de programa de Moda para calendario B |
-| `grupo_b.logistica` | Nombres de programa de Logística para calendario B |
-| `grupo_b.marketing` | Nombres de programa de Marketing para calendario B |
-| `grupo_b.sedes_moda` | Sedes donde Moda es Grupo B (`["INEM"]`) |
-| `grupo_b.sedes_logistica_marketing` | Sedes donde Logística/Marketing son Grupo B (`["MINCA", "BURITACA"]`) |
-| `grupo_b.semestre` | Semestre que aplica para Grupo B (`"Semestre 01"`) |
+| `calendario_2.programas_moda` | `Codigo_programa` de Moda en Calendario 2 (todos los semestres) |
+| `calendario_2.programas_turismo_marketing` | `Codigo_programa` de Turismo/Marketing en Calendario 2 (solo semestre 01) |
+| `calendario_2.semestre` | Semestre que aplica para Calendario 2 en Turismo/Marketing (`"01"`) |
 | `cortes_a` | Fechas de corte calendario A |
 | `cortes_b` | Fechas de corte calendario B |
 | `etiquetas_seguimiento` | Etiquetas de seguimiento (`["Seguimiento 1", ...]`) |
@@ -165,10 +161,9 @@ Archivo JSON externo con toda la configuración específica del semestre. Se mod
 | `PERIODOS` | Cargado desde `semestre.json` |
 | `PROGRAMAS` | Cargado desde `semestre.json` |
 | `EXCLUIR_PROGRAMAS` | Cargado desde `semestre.json` |
-| `PROGRAMAS_GRUPO_B` | Cargado desde `semestre.json` |
-| `SEDES_GRUPO_B_MODA` | Sedes de Moda grupo B |
-| `SEDES_GRUPO_B_LOGISTICA_MARKETING` | Sedes de Logística/Marketing grupo B |
-| `SEMESTRE_GRUPO_B` | Semestre que aplica grupo B |
+| `CALENDARIO_2_PROGRAMAS_MODA` | `Codigo_programa` de Moda C2 |
+| `CALENDARIO_2_PROGRAMAS_TURISMO_MARKETING` | `Codigo_programa` de Turismo/Marketing C2 |
+| `CALENDARIO_2_SEMESTRE` | Semestre que aplica C2 (`"01"`) |
 | `CORTES_A` / `CORTES_B` | Fechas de corte |
 | `FECHA_INICIO_INASISTENCIAS` | Cargado desde `semestre.json` |
 
@@ -186,28 +181,30 @@ main.py  (CLI: python main.py [módulo] — disponible: todo, rapido, cursos, ca
 │   └── → data/raw/cancelados.{csv,parquet}
 │
 ├── notas
-    │   ├── (usa cursos.parquet para obtener consecutivo_curso por periodo)
-    │   ├── GET /evaluaciones/cuantitativo/notas?Consecutivo_curso={id}
-    │   ├── transform: extrae primeros 3 parámetros padre, renombra a
-    │   │   Primer/Segundo/Tercer Seguimiento, asigna Grupo del nombre del curso
-    │   │   Grupo A: Nota final = 30%Primer + 30%Segundo + 40%Tercer
-    │   │   Grupo B: Segundo/Tercer = None, Nota final = Primer Seguimiento
-    │   ├── limpia Nombre_asignatura (quita prefijo "{codigo}-")
-    │   ├── filtra estudiantes que aparecen en cancelados (Numero_identificacion)
-    │   └── → data/raw/notas_pivot.parquet
+│   ├── (usa cursos.parquet para obtener consecutivo_curso por periodo)
+│   ├── GET /evaluaciones/cuantitativo/notas?Consecutivo_curso={id}
+│   ├── transform: extrae primeros 3 parámetros padre, renombra a
+│   │   Primer/Segundo/Tercer Seguimiento, asigna Grupo (A/B/C) del nombre del curso
+│   │   asigna Calendario (1/2) según programa×sede×semestre:
+│   │     C2 = Moda INEM (cualquier semestre)
+│   │        | Turismo/Marketing Minca/Buritaca sem 01
+│   │   Nota final = fillna(0) × [0.3, 0.3, 0.4] (todos)
+│   ├── limpia Nombre_asignatura (quita prefijo "{codigo}-")
+│   ├── filtra estudiantes que aparecen en cancelados (Numero_identificacion)
+│   └── → data/raw/notas_pivot.parquet
 │
 ├── estudiantes
-    │   ├── GET /estudiantes?Periodo={id} (con paginación)
-    │   ├── merge Grupo desde notas_pivot (por Numero_identificacion)
-    │   ├── columna Estado (Activo/Cancelado) comparando con cancelados.parquet
-    │   └── → data/raw/estudiantes.{parquet,csv}
+│   ├── GET /estudiantes?Periodo={id} (con paginación)
+│   ├── merge Grupo + Calendario desde notas_pivot (por Numero_identificacion)
+│   ├── columna Estado (Activo/Cancelado) comparando con cancelados.parquet
+│   └── → data/raw/estudiantes.{parquet,csv}
 │
 ├── inasistencias
 │   ├── GET /inasistencias?Fecha_inicio={}&Fecha_fin={}
 │   ├── filtra módulos no relevantes (CIES, TecLab)
 │   ├── limpia Nombre_modulo (quita prefijo numérico)
-│   ├── enriquece con Sede, Programa, Semestre, Grupo (A/B), Seguimiento
-│   │   Grupo B = Semestre 01 + (Moda en INEM | Logística en MINCA/BURITACA | Marketing en MINCA/BURITACA)
+│   ├── enriquece con Sede, Programa, Semestre, Calendario (1/2), Grupo, Seguimiento
+│   │   Calendario 2 = Moda INEM (cualquier semestre) | Turismo/Marketing Minca/Buritaca sem 01
 │   └── → data/raw/inasistencias_{agregado,detalle,enriquecido}.parquet
 │
 ├── consolidar
@@ -219,13 +216,13 @@ main.py  (CLI: python main.py [módulo] — disponible: todo, rapido, cursos, ca
 │   └── convierte datasets a .xlsx (notas_pivot partido en 6 hojas)
 │
 ├── reporte
-    │   └── genera bajo_rendimiento.xlsx (4 hojas) + CSVs por área/asignatura/curso/estudiantes
-    │
-    ├── reporte_inasistencias
-    │   └── genera inasistencias.xlsx (8 hojas) + CSVs por programa/módulo/seguimiento/sede/cruzadas
-    │
-    └── conteo
-        └── genera conteo_estudiantes.{csv,xlsx} (Matriculados/Activos/Cancelados por prog./sede/semestre)
+│   └── genera bajo_rendimiento.xlsx (4 hojas) + CSVs por área/asignatura/curso/estudiantes
+│
+├── reporte_inasistencias
+│   └── genera inasistencias.xlsx (8 hojas) + CSVs por programa/módulo/seguimiento/sede/cruzadas
+│
+└── conteo
+    └── genera conteo_estudiantes.{csv,xlsx} (Matriculados/Activos/Cancelados por prog./sede/semestre)
 ```
 
 ## Clasificación de estudiantes
@@ -241,6 +238,7 @@ El módulo `estudiantes` extrae el endpoint `GET /estudiantes?Periodo={id}` que 
 | **Grupo** | `Consecutivo_grupo`, `Nombre_grupo` | Grupo de clase (puede ser null) |
 | **Condición** | `Condicion_matricula` | "Nuevo" o "Antiguo" |
 | **Estado** | `Estado` | "Activo" o "Cancelado" según si aparece en cancelados.parquet |
+| **Calendario** | `Calendario` | 1 (regular) o 2 (Moda INEM, Turismo/Marketing Minca/Buritaca sem 01) |
 
 Además, `Nombre_programa` se procesa con `separar_sede_programa()` (`extract_estudiantes.py:14`) que extrae `Sede` y `Nombre_programa_limpio`:
 - 2 partes: `"BASTIDAS - TECNOLOGÍA EN MARKETING DIGITAL"` → sede=`BASTIDAS`, programa=`TECNOLOGÍA EN MARKETING DIGITAL`
@@ -270,7 +268,7 @@ Estas dimensiones se fusionan con la tabla de notas durante la consolidación, l
 ## Tests
 
 ```bash
-pytest tests/ -v    # 84 tests
+pytest tests/ -v    # 99 tests
 ```
 
 ---
