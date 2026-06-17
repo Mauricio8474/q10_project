@@ -3,10 +3,7 @@ import logging
 import pandas as pd
 
 from .config import (
-    PROGRAMAS_GRUPO_B,
-    SEDES_GRUPO_B_MODA,
-    SEDES_GRUPO_B_LOGISTICA_MARKETING,
-    SEMESTRE_GRUPO_B,
+    CALENDARIO_2_SEMESTRE,
     CORTES_A,
     CORTES_B,
     ETIQUETAS_A,
@@ -20,25 +17,40 @@ def _es_sede_valida(sede, sedes_permitidas):
     return pd.notna(sede) and sede.strip().upper() in [s.upper() for s in sedes_permitidas]
 
 
+_SEDES_MODA = ["INEM"]
+_SEDES_TURISMO_MARKETING = ["MINCA", "BURITACA"]
+_PROGRAMA_MODA = "TECNOLOGÍA EN GESTIÓN DE PRODUCCIÓN DE MODAS"
+_PROGRAMA_TURISMO = "TECNOLOGÍA EN GESTIÓN DEL TURISMO CULTURAL Y DE NATURALEZA"
+_PROGRAMA_MARKETING = "TECNOLOGÍA EN MARKETING DIGITAL"
+
+
+def _extraer_numero_semestre(nombre_nivel):
+    if pd.isna(nombre_nivel):
+        return None
+    s = nombre_nivel.strip()
+    for palabra in s.split():
+        if palabra.isdigit():
+            return palabra
+    return None
+
+
 def _asignar_grupo_estudiante(programa, sede, nombre_nivel=None):
     if pd.isna(programa):
         return "A"
     prog = programa.strip().upper()
-    es_semestre_1 = (
-        pd.notna(nombre_nivel)
-        and nombre_nivel.strip().upper() == SEMESTRE_GRUPO_B.upper()
-    )
+    sem_num = _extraer_numero_semestre(nombre_nivel)
+    es_semestre_1 = sem_num == CALENDARIO_2_SEMESTRE
     if not es_semestre_1:
         return "A"
     # Moda solo en INEM
-    if any(p.upper() == prog for p in PROGRAMAS_GRUPO_B["MODA"]):
-        return "B" if _es_sede_valida(sede, SEDES_GRUPO_B_MODA) else "A"
-    # Logística solo en MINCA / BURITACA
-    if any(p.upper() == prog for p in PROGRAMAS_GRUPO_B["LOGISTICA"]):
-        return "B" if _es_sede_valida(sede, SEDES_GRUPO_B_LOGISTICA_MARKETING) else "A"
+    if prog == _PROGRAMA_MODA:
+        return "B" if _es_sede_valida(sede, _SEDES_MODA) else "A"
+    # Turismo solo en MINCA / BURITACA
+    if prog == _PROGRAMA_TURISMO:
+        return "B" if _es_sede_valida(sede, _SEDES_TURISMO_MARKETING) else "A"
     # Marketing solo en MINCA / BURITACA
-    if any(p.upper() == prog for p in PROGRAMAS_GRUPO_B["MARKETING"]):
-        return "B" if _es_sede_valida(sede, SEDES_GRUPO_B_LOGISTICA_MARKETING) else "A"
+    if prog == _PROGRAMA_MARKETING:
+        return "B" if _es_sede_valida(sede, _SEDES_TURISMO_MARKETING) else "A"
     return "A"
 
 

@@ -33,18 +33,13 @@ EXCLUIR_PROGRAMAS = _SEMESTRE["excluir_programas"]
 FECHA_INICIO_INASISTENCIAS = _SEMESTRE["fecha_inicio_inasistencias"]
 
 # ---------------------------------------------------
-# INASISTENCIAS — Grupos con fechas diferenciadas
+# INASISTENCIAS — Calendario 2 con fechas diferenciadas
 # ---------------------------------------------------
 
-_gb = _SEMESTRE["grupo_b"]
-PROGRAMAS_GRUPO_B = {
-    "MODA": _gb["moda"],
-    "LOGISTICA": _gb["logistica"],
-    "MARKETING": _gb["marketing"],
-}
-SEDES_GRUPO_B_MODA = _gb["sedes_moda"]
-SEDES_GRUPO_B_LOGISTICA_MARKETING = _gb["sedes_logistica_marketing"]
-SEMESTRE_GRUPO_B = _gb["semestre"]
+_c2 = _SEMESTRE["calendario_2"]
+CALENDARIO_2_PROGRAMAS_MODA = _c2["programas_moda"]
+CALENDARIO_2_PROGRAMAS_TURISMO_MARKETING = _c2["programas_turismo_marketing"]
+CALENDARIO_2_SEMESTRE = _c2["semestre"]
 
 CORTES_A = pd.to_datetime(_SEMESTRE["cortes_a"])
 CORTES_B = pd.to_datetime(_SEMESTRE["cortes_b"])

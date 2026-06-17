@@ -25,19 +25,14 @@ class TestAsignarGrupoEstudiante:
             "TECNOLOGÍA EN GESTIÓN DE PRODUCCIÓN DE MODAS", "BASTIDAS", "Semestre 01"
         ) == "A"
 
-    def test_logistica_minca_semestre_1(self):
+    def test_logistica_semestre_1(self):
         assert _asignar_grupo_estudiante(
             "TECNOLOGÍA EN GESTIÓN DE OPERACIONES LOGÍSTICAS", "MINCA", "Semestre 01"
-        ) == "B"
+        ) == "A"
 
     def test_logistica_buritaca_semestre_1(self):
         assert _asignar_grupo_estudiante(
             "TECNOLOGÍA EN GESTIÓN DE OPERACIONES LOGÍSTICAS", "BURITACA", "Semestre 01"
-        ) == "B"
-
-    def test_logistica_bastidas_semestre_1(self):
-        assert _asignar_grupo_estudiante(
-            "TECNOLOGÍA EN GESTIÓN DE OPERACIONES LOGÍSTICAS", "BASTIDAS", "Semestre 01"
         ) == "A"
 
     def test_marketing_minca_semestre_1(self):
@@ -55,9 +50,24 @@ class TestAsignarGrupoEstudiante:
             "TECNOLOGÍA EN MARKETING DIGITAL", "BASTIDAS", "Semestre 01"
         ) == "A"
 
-    def test_logistica_minca_semestre_2(self):
+    def test_turismo_minca_semestre_1(self):
         assert _asignar_grupo_estudiante(
-            "TECNOLOGÍA EN GESTIÓN DE OPERACIONES LOGÍSTICAS", "MINCA", "Semestre 02"
+            "TECNOLOGÍA EN GESTIÓN DEL TURISMO CULTURAL Y DE NATURALEZA", "MINCA", "Semestre 01"
+        ) == "B"
+
+    def test_turismo_buritaca_semestre_1(self):
+        assert _asignar_grupo_estudiante(
+            "TECNOLOGÍA EN GESTIÓN DEL TURISMO CULTURAL Y DE NATURALEZA", "BURITACA", "Semestre 01"
+        ) == "B"
+
+    def test_turismo_inem_semestre_1(self):
+        assert _asignar_grupo_estudiante(
+            "TECNOLOGÍA EN GESTIÓN DEL TURISMO CULTURAL Y DE NATURALEZA", "INEM", "Semestre 01"
+        ) == "A"
+
+    def test_turismo_minca_semestre_2(self):
+        assert _asignar_grupo_estudiante(
+            "TECNOLOGÍA EN GESTIÓN DEL TURISMO CULTURAL Y DE NATURALEZA", "MINCA", "Semestre 02"
         ) == "A"
 
     def test_otro_programa_semestre_1(self):

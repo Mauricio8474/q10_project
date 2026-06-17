@@ -1,6 +1,13 @@
 import pytest
 
-from src.transform_notas import _extraer_seguimientos, _asignar_grupo, _calcular_nota_final, _limpiar_nombre_asignatura
+from src.transform_notas import (
+    _extraer_seguimientos,
+    _asignar_grupo,
+    _calcular_nota_final,
+    _extraer_semestre,
+    _asignar_calendario,
+    _limpiar_nombre_asignatura,
+)
 
 
 class TestExtraerSeguimientos:
@@ -79,21 +86,65 @@ class TestAsignarGrupo:
 
 class TestCalcularNotaFinal:
 
-    def test_notas_completas_grupo_a(self):
+    def test_notas_completas(self):
         row = {"Primer Seguimiento": 4.0, "Segundo Seguimiento": 3.0, "Tercer Seguimiento": 5.0}
-        assert _calcular_nota_final(row, "A") == pytest.approx(4.0 * 0.3 + 3.0 * 0.3 + 5.0 * 0.4)
+        assert _calcular_nota_final(row) == pytest.approx(4.0 * 0.3 + 3.0 * 0.3 + 5.0 * 0.4)
 
-    def test_notas_none_grupo_a(self):
+    def test_notas_none(self):
         row = {"Primer Seguimiento": None, "Segundo Seguimiento": None, "Tercer Seguimiento": None}
-        assert _calcular_nota_final(row, "A") == 0.0
+        assert _calcular_nota_final(row) == 0.0
 
-    def test_notas_parciales_grupo_a(self):
+    def test_notas_parciales(self):
         row = {"Primer Seguimiento": 4.0, "Segundo Seguimiento": None, "Tercer Seguimiento": 5.0}
-        assert _calcular_nota_final(row, "A") == pytest.approx(4.0 * 0.3 + 0 + 5.0 * 0.4)
+        assert _calcular_nota_final(row) == pytest.approx(4.0 * 0.3 + 0 + 5.0 * 0.4)
 
-    def test_grupo_b_solo_primer(self):
-        row = {"Primer Seguimiento": 4.5, "Segundo Seguimiento": 3.0, "Tercer Seguimiento": 5.0}
-        assert _calcular_nota_final(row, "B") == 4.5
+
+class TestExtraerSemestre:
+
+    def test_codigo_numerico_sem_01(self):
+        assert _extraer_semestre("42010101") == "01"
+
+    def test_codigo_numerico_sem_02(self):
+        assert _extraer_semestre("42050207") == "02"
+
+    def test_codigo_corto(self):
+        assert _extraer_semestre("12345") is None
+
+    def test_codigo_no_numerico(self):
+        assert _extraer_semestre("TecLab-001") is None
+
+    def test_codigo_none(self):
+        assert _extraer_semestre(None) is None
+
+
+class TestAsignarCalendario:
+
+    def test_moda_inem(self):
+        assert _asignar_calendario("Tecnolog-Mod-Inem", "42050101") == 2
+
+    def test_turismo_minca_sem_01(self):
+        assert _asignar_calendario("Tecnolog-Turis-Min", "42020101") == 2
+
+    def test_turismo_minca_sem_02(self):
+        assert _asignar_calendario("Tecnolog-Turis-Min", "42020208") == 1
+
+    def test_turismo_buritaca_sem_01(self):
+        assert _asignar_calendario("Tecnolog-Turis-Bur", "42020101") == 2
+
+    def test_marketing_minca_sem_01(self):
+        assert _asignar_calendario("Tecnolog-Mkt-Min", "42010101") == 2
+
+    def test_marketing_buritaca_sem_01(self):
+        assert _asignar_calendario("Tecnolog-Mkt-Bur", "42010101") == 2
+
+    def test_marketing_minca_sem_02(self):
+        assert _asignar_calendario("Tecnolog-Mkt-Min", "42010208") == 1
+
+    def test_gastronomia_sem_01(self):
+        assert _asignar_calendario("Tecnolog-Gastro", "42030101") == 1
+
+    def test_logistica_sem_01(self):
+        assert _asignar_calendario("Tecnolog-Logis", "42040101") == 1
 
 
 class TestLimpiarNombreAsignatura:

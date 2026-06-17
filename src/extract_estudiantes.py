@@ -95,6 +95,17 @@ def ejecutar_extraccion_estudiantes():
         )
         df = df.merge(grupo_por_id, on="Numero_identificacion", how="left")
         logger.info("Grupo agregado desde notas_pivot")
+        if "Calendario" in notas.columns:
+            cal_por_id = (
+                notas[["Numero_identificacion_estudiante", "Calendario"]]
+                .drop_duplicates()
+                .groupby("Numero_identificacion_estudiante")["Calendario"]
+                .apply(lambda x: ", ".join(sorted(x.unique().astype(str))))
+                .reset_index()
+                .rename(columns={"Numero_identificacion_estudiante": "Numero_identificacion"})
+            )
+            df = df.merge(cal_por_id, on="Numero_identificacion", how="left")
+            logger.info("Calendario agregado desde notas_pivot")
     except FileNotFoundError:
         logger.warning("notas_pivot.parquet no encontrado, se omite Grupo")
 
