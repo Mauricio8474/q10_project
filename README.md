@@ -141,12 +141,12 @@ Archivo JSON externo con toda la configuración específica del semestre. Se mod
 
 | Campo | Descripción |
 |---|---|
-| `periodo` | Número del periodo académico (ej: 6) |
+| `periodo` | Número del periodo académico (ej: 7) |
 | `programas` | Códigos API de programas tecnológicos USM |
 | `excluir_programas` | Programas excluidos (TecLab, CIES, Diplo) |
-| `fecha_inicio_inasistencias` | Inicio del rango (`"2026-02-01"`) |
-| `calendario_2.programas_moda` | `Codigo_programa` de Moda en Calendario 2 (todos los semestres) |
-| `calendario_2.programas_turismo_marketing` | `Codigo_programa` de Turismo/Marketing en Calendario 2 (solo semestre 01) |
+| `fecha_inicio_inasistencias` | Inicio del rango (`"2026-08-10"`) |
+| `calendario_2.programas_moda` | `Codigo_programa` de Moda en Calendario 2. Se define por periodo; periodo 7 vacío (Moda en Calendario 1 este semestre) |
+| `calendario_2.programas_turismo_marketing` | `Codigo_programa` de Turismo/Marketing en Calendario 2 (solo semestre 01). Periodo 7 vacío (todos los programas en Calendario 1) |
 | `calendario_2.semestre` | Semestre que aplica para Calendario 2 en Turismo/Marketing (`"01"`) |
 | `cortes_a` | Fechas de corte calendario A |
 | `cortes_b` | Fechas de corte calendario B |
@@ -185,9 +185,9 @@ main.py  (CLI: python main.py [módulo] — disponible: todo, rapido, cursos, ca
 │   ├── GET /evaluaciones/cuantitativo/notas?Consecutivo_curso={id}
 │   ├── transform: extrae primeros 3 parámetros padre, renombra a
 │   │   Primer/Segundo/Tercer Seguimiento, asigna Grupo (A/B/C) del nombre del curso
-│   │   asigna Calendario (1/2) según programa×sede×semestre:
-│   │     C2 = Moda INEM (cualquier semestre)
-│   │        | Turismo/Marketing Minca/Buritaca sem 01
+│   │   asigna Calendario (1/2) según listas de semestre.json (calendario_2.*):
+│   │     periodo 7: ambas listas vacías → todos los programas en Calendario 1
+│   │     (incluye Moda, que en otros periodos puede estar en Calendario 2)
 │   │   Nota final = fillna(0) × [0.3, 0.3, 0.4] (todos)
 │   ├── limpia Nombre_asignatura (quita prefijo "{codigo}-")
 │   ├── filtra estudiantes que aparecen en cancelados (Numero_identificacion)
@@ -204,7 +204,7 @@ main.py  (CLI: python main.py [módulo] — disponible: todo, rapido, cursos, ca
 │   ├── filtra módulos no relevantes (CIES, TecLab)
 │   ├── limpia Nombre_modulo (quita prefijo numérico)
 │   ├── enriquece con Sede, Programa, Semestre, Calendario (1/2), Grupo, Seguimiento
-│   │   Calendario 2 = Moda INEM (cualquier semestre) | Turismo/Marketing Minca/Buritaca sem 01
+│   │   Calendario 2 según listas de semestre.json; periodo 7 vacías → todos en Calendario 1
 │   └── → data/raw/inasistencias_{agregado,detalle,enriquecido}.parquet
 │
 ├── consolidar
@@ -238,7 +238,7 @@ El módulo `estudiantes` extrae el endpoint `GET /estudiantes?Periodo={id}` que 
 | **Grupo** | `Consecutivo_grupo`, `Nombre_grupo` | Grupo de clase (puede ser null) |
 | **Condición** | `Condicion_matricula` | "Nuevo" o "Antiguo" |
 | **Estado** | `Estado` | "Activo" o "Cancelado" según si aparece en cancelados.parquet |
-| **Calendario** | `Calendario` | 1 (regular) o 2 (Moda INEM, Turismo/Marketing Minca/Buritaca sem 01) |
+| **Calendario** | `Calendario` | 1 (regular) o 2, según listas `calendario_2.*` de `semestre.json`. Periodo 7: ambas listas vacías → todos en Calendario 1 (incluida Moda) |
 
 Además, `Nombre_programa` se procesa con `separar_sede_programa()` (`extract_estudiantes.py:14`) que extrae `Sede` y `Nombre_programa_limpio`:
 - 2 partes: `"BASTIDAS - TECNOLOGÍA EN MARKETING DIGITAL"` → sede=`BASTIDAS`, programa=`TECNOLOGÍA EN MARKETING DIGITAL`
