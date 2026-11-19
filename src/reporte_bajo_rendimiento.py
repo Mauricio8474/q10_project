@@ -25,12 +25,16 @@ def _asignar_area(nombre):
     return "Otra"
 
 
-def _tabla_agrupada(df, groupby_cols):
-    return df.groupby(groupby_cols).agg(
+def _tabla_agrupada(df, groupby_cols, incluir_creditos=False):
+    aggs = dict(
         Total_estudiantes=("bajo", "count"),
         Bajo_rendimiento=("bajo", "sum"),
         Porcentaje_bajo=("bajo", "mean")
-    ).reset_index().assign(
+    )
+    if incluir_creditos and "Creditos_asignatura" in df.columns:
+        aggs["Creditos_asignatura"] = ("Creditos_asignatura", "first")
+
+    return df.groupby(groupby_cols).agg(**aggs).reset_index().assign(
         Porcentaje_bajo=lambda x: (x["Porcentaje_bajo"] * 100).round(1)
     ).sort_values("Porcentaje_bajo", ascending=False).reset_index(drop=True)
 
@@ -43,11 +47,13 @@ def _generar_tablas_por_seguimiento(df, col_nota, sufijo):
     cols_est = ["Nombre_completo_estudiante", "Numero_identificacion_estudiante",
                 "Sede", "Nombre_programa_limpio", "Nombre_asignatura", "Grupo",
                 "Primer Seguimiento", "Segundo Seguimiento", "Tercer Seguimiento", col_nota]
+    if "Creditos_asignatura" in df.columns:
+        cols_est.append("Creditos_asignatura")
 
     return {
         f"area_{sufijo}": _tabla_agrupada(df, ["Area"]),
-        f"asignatura_{sufijo}": _tabla_agrupada(df, ["Codigo_asignatura", "Nombre_asignatura", "Area"]),
-        f"curso_{sufijo}": _tabla_agrupada(df, ["Nombre_curso", "Sede", "Nombre_programa_limpio", "Area"]),
+        f"asignatura_{sufijo}": _tabla_agrupada(df, ["Codigo_asignatura", "Nombre_asignatura", "Area"], incluir_creditos=True),
+        f"curso_{sufijo}": _tabla_agrupada(df, ["Nombre_curso", "Sede", "Nombre_programa_limpio", "Area"], incluir_creditos=True),
         f"estudiantes_revision_{sufijo}": df[df["condicion_de_alerta"]][cols_est].drop_duplicates().reset_index(drop=True),
     }
 

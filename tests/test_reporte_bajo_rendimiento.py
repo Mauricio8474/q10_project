@@ -66,6 +66,16 @@ class TestTablas:
         assert "Nombre_curso" in res.columns
         assert len(res) == 3
 
+    def test_tabla_asignatura_incluye_creditos_si_estan_presentes(self, df):
+        df["Creditos_asignatura"] = [3.0, 2.0, 3.0, 4.0, 2.0]
+        res = _tabla_agrupada(df, ["Codigo_asignatura", "Nombre_asignatura", "Area"], incluir_creditos=True)
+        assert "Creditos_asignatura" in res.columns
+        assert set(res["Creditos_asignatura"]) == {3.0, 2.0, 4.0}
+
+    def test_tabla_sin_creditos_no_falla(self, df):
+        res = _tabla_agrupada(df, ["Codigo_asignatura", "Nombre_asignatura", "Area"], incluir_creditos=True)
+        assert "Creditos_asignatura" not in res.columns
+
     def test_tabla_estudiantes_revision(self, df):
         res = df[df["condicion_de_alerta"]][
             ["Nombre_completo_estudiante", "Numero_identificacion_estudiante", "Sede", "Nombre_programa_limpio", "Nombre_asignatura", "Nota final"]

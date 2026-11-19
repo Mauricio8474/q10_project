@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from src import transform_notas
@@ -8,6 +9,7 @@ from src.transform_notas import (
     _extraer_semestre,
     _asignar_calendario,
     _limpiar_nombre_asignatura,
+    transformar_notas,
 )
 
 
@@ -179,3 +181,58 @@ class TestLimpiarNombreAsignatura:
 
     def test_codigo_nulo(self):
         assert _limpiar_nombre_asignatura("ALGO", None) == "ALGO"
+
+
+class TestTransformarNotasCreditos:
+    """
+    transformar_notas() agrega Creditos_asignatura desde data/raw/pensum.parquet
+    (join por Codigo_programa + Codigo_asignatura). Se monkeypatchean el I/O
+    y la config de calendario/exclusión para no depender del estado real del repo.
+    """
+
+    def _df_raw_minimo(self):
+        params = [
+            {"Consecutivo_padre": None, "Nota": 4.0},
+            {"Consecutivo_padre": None, "Nota": 3.0},
+            {"Consecutivo_padre": None, "Nota": 5.0},
+        ]
+        return pd.DataFrame({
+            "Nombre_curso": ["CURSO X (A)"],
+            "Nombre_programa": ["BASTIDAS - TECNOLOGÍA EN GESTIÓN DE OPERACIONES LOGÍSTICAS"],
+            "Codigo_programa": ["Tecnolog-Logis-Bas"],
+            "Codigo_asignatura": ["42040101"],
+            "Nombre_asignatura": ["42040101-COMUNICACIÓN ESCRITA"],
+            "Parametros_evaluacion": [params],
+        })
+
+    def _preparar_monkeypatch(self, monkeypatch):
+        monkeypatch.setattr(transform_notas, "EXCLUIR_PROGRAMAS", [])
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_MODA", [])
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_TURISMO_MARKETING", [])
+        monkeypatch.setattr(transform_notas, "guardar_parquet", lambda *a, **k: None)
+        monkeypatch.setattr(transform_notas, "guardar_csv", lambda *a, **k: None)
+
+    def test_agrega_creditos_cuando_hay_pensum(self, monkeypatch):
+        self._preparar_monkeypatch(monkeypatch)
+        pensum = pd.DataFrame({
+            "Codigo_programa": ["Tecnolog-Logis-Bas"],
+            "Codigo_asignatura": ["42040101"],
+            "Creditos_asignatura": [2.0],
+        })
+        monkeypatch.setattr(transform_notas.pd, "read_parquet", lambda *a, **k: pensum)
+
+        df = transformar_notas(self._df_raw_minimo())
+
+        assert df.loc[0, "Creditos_asignatura"] == 2.0
+
+    def test_sin_pensum_no_falla(self, monkeypatch):
+        self._preparar_monkeypatch(monkeypatch)
+
+        def _raise(*a, **k):
+            raise FileNotFoundError
+
+        monkeypatch.setattr(transform_notas.pd, "read_parquet", _raise)
+
+        df = transformar_notas(self._df_raw_minimo())
+
+        assert "Creditos_asignatura" not in df.columns

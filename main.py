@@ -49,6 +49,13 @@ def cmd_cursos():
     resumen_dataframe(df)
 
 
+def cmd_pensum():
+    from src.extract_pensum import ejecutar_extraccion_pensum
+
+    df = ejecutar_extraccion_pensum()
+    resumen_dataframe(df)
+
+
 def cmd_notas():
     from src.extract_notas import ejecutar_extraccion_notas
     from src.transform_notas import transformar_notas
@@ -175,7 +182,7 @@ def main():
         "comando",
         nargs="?",
         default="todo",
-        choices=["cancelados", "cursos", "notas", "inasistencias", "estudiantes", "consolidar", "excel", "reporte", "reporte_inasistencias", "conteo", "todo", "rapido"],
+        choices=["cancelados", "cursos", "pensum", "notas", "inasistencias", "estudiantes", "consolidar", "excel", "reporte", "reporte_inasistencias", "conteo", "todo", "rapido"],
         help="Módulo a ejecutar (default: todo)"
     )
 
@@ -184,6 +191,7 @@ def main():
     {
         "cancelados": cmd_cancelados,
         "cursos": cmd_cursos,
+        "pensum": cmd_pensum,
         "notas": cmd_notas,
         "inasistencias": cmd_inasistencias,
         "estudiantes": cmd_estudiantes,

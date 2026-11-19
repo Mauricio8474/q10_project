@@ -95,6 +95,19 @@ def transformar_notas(df_raw):
     df_pivot = df_pivot[~df_pivot["Codigo_programa"].isin(EXCLUIR_PROGRAMAS)].copy()
     logger.info("Programas excluidos: %s registros eliminados", antes - len(df_pivot))
 
+    try:
+        pensum = pd.read_parquet("data/raw/pensum.parquet")
+        creditos = pensum[["Codigo_programa", "Codigo_asignatura", "Creditos_asignatura"]].drop_duplicates(
+            subset=["Codigo_programa", "Codigo_asignatura"]
+        )
+        df_pivot = df_pivot.merge(creditos, on=["Codigo_programa", "Codigo_asignatura"], how="left")
+        logger.info(
+            "Créditos agregados desde pensum: %s/%s filas con crédito",
+            df_pivot["Creditos_asignatura"].notna().sum(), len(df_pivot)
+        )
+    except FileNotFoundError:
+        logger.warning("pensum.parquet no encontrado, se omite Creditos_asignatura")
+
     guardar_parquet(df_pivot, "notas_pivot.parquet")
     guardar_csv(df_pivot, "notas_pivot.csv")
 
