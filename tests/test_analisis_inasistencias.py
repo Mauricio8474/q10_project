@@ -1,11 +1,22 @@
 import pandas as pd
 import pytest
 
+from src import analisis_inasistencias
 from src.analisis_inasistencias import (
     _asignar_grupo_estudiante,
     _clasificar_seguimiento,
+    agregar_sede_nivel,
     enriquecer_inasistencias,
 )
+
+_CORTES_A_TEST = pd.to_datetime(["2026-02-01", "2026-03-15", "2026-04-19", "2026-05-30"])
+
+
+@pytest.fixture(autouse=True)
+def _cortes_a_fijos(monkeypatch):
+    """CORTES_A viene de semestre.json y cambia cada periodo; se fija aquí
+    para que estos tests no dependan del contenido actual del archivo."""
+    monkeypatch.setattr(analisis_inasistencias, "CORTES_A", _CORTES_A_TEST)
 
 
 class TestAsignarGrupoEstudiante:
@@ -118,6 +129,51 @@ class TestClasificarSeguimiento:
 
     def test_borde_exacto_corte(self):
         assert _clasificar_seguimiento(pd.Timestamp("2026-03-15"), "A") == "Seguimiento 2"
+
+
+class TestAgregarSedeNivel:
+
+    def test_agrega_columnas_sin_alterar_filas(self):
+        df = pd.DataFrame({
+            "Numero_identificacion_estudiante": ["1", "2", "3"],
+            "Cantidad_inasistencia": [2, 3, 1],
+        })
+        estudiantes = pd.DataFrame({
+            "Numero_identificacion": ["1", "2", "3"],
+            "Sede": ["BASTIDAS", "MINCA", "INEM"],
+            "Nombre_nivel": ["Semestre 01", "Semestre 02", "Semestre 01"],
+        })
+        res = agregar_sede_nivel(df, estudiantes)
+        assert len(res) == len(df)
+        assert list(res["Sede"]) == ["BASTIDAS", "MINCA", "INEM"]
+        assert "Numero_identificacion" not in res.columns
+
+    def test_estudiante_sin_match_queda_nulo(self):
+        df = pd.DataFrame({
+            "Numero_identificacion_estudiante": ["1", "99"],
+            "Cantidad_inasistencia": [2, 3],
+        })
+        estudiantes = pd.DataFrame({
+            "Numero_identificacion": ["1"],
+            "Sede": ["BASTIDAS"],
+            "Nombre_nivel": ["Semestre 01"],
+        })
+        res = agregar_sede_nivel(df, estudiantes)
+        assert len(res) == 2
+        assert pd.isna(res.loc[res["Numero_identificacion_estudiante"] == "99", "Sede"]).all()
+
+    def test_estudiante_duplicado_no_infla_filas(self):
+        df = pd.DataFrame({
+            "Numero_identificacion_estudiante": ["1"],
+            "Cantidad_inasistencia": [2],
+        })
+        estudiantes = pd.DataFrame({
+            "Numero_identificacion": ["1", "1"],
+            "Sede": ["BASTIDAS", "BASTIDAS"],
+            "Nombre_nivel": ["Semestre 01", "Semestre 01"],
+        })
+        res = agregar_sede_nivel(df, estudiantes)
+        assert len(res) == 1
 
 
 class TestEnriquecerInasistencias:

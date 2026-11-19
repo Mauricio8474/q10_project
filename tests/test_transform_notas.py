@@ -1,5 +1,6 @@
 import pytest
 
+from src import transform_notas
 from src.transform_notas import (
     _extraer_seguimientos,
     _asignar_grupo,
@@ -118,26 +119,38 @@ class TestExtraerSemestre:
 
 
 class TestAsignarCalendario:
+    """
+    CALENDARIO_2_PROGRAMAS_MODA/TURISMO_MARKETING vienen de semestre.json y
+    cambian cada periodo (p.ej. vacíos en el periodo 7). Se monkeypatchean
+    para que estos tests no dependan del contenido actual del archivo.
+    """
 
-    def test_moda_inem(self):
+    def test_moda_inem(self, monkeypatch):
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_MODA", ["Tecnolog-Mod-Inem"])
         assert _asignar_calendario("Tecnolog-Mod-Inem", "42050101") == 2
 
-    def test_turismo_minca_sem_01(self):
+    def test_turismo_minca_sem_01(self, monkeypatch):
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_TURISMO_MARKETING", ["Tecnolog-Turis-Min"])
         assert _asignar_calendario("Tecnolog-Turis-Min", "42020101") == 2
 
-    def test_turismo_minca_sem_02(self):
+    def test_turismo_minca_sem_02(self, monkeypatch):
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_TURISMO_MARKETING", ["Tecnolog-Turis-Min"])
         assert _asignar_calendario("Tecnolog-Turis-Min", "42020208") == 1
 
-    def test_turismo_buritaca_sem_01(self):
+    def test_turismo_buritaca_sem_01(self, monkeypatch):
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_TURISMO_MARKETING", ["Tecnolog-Turis-Bur"])
         assert _asignar_calendario("Tecnolog-Turis-Bur", "42020101") == 2
 
-    def test_marketing_minca_sem_01(self):
+    def test_marketing_minca_sem_01(self, monkeypatch):
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_TURISMO_MARKETING", ["Tecnolog-Mkt-Min"])
         assert _asignar_calendario("Tecnolog-Mkt-Min", "42010101") == 2
 
-    def test_marketing_buritaca_sem_01(self):
+    def test_marketing_buritaca_sem_01(self, monkeypatch):
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_TURISMO_MARKETING", ["Tecnolog-Mkt-Bur"])
         assert _asignar_calendario("Tecnolog-Mkt-Bur", "42010101") == 2
 
-    def test_marketing_minca_sem_02(self):
+    def test_marketing_minca_sem_02(self, monkeypatch):
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_TURISMO_MARKETING", ["Tecnolog-Mkt-Min"])
         assert _asignar_calendario("Tecnolog-Mkt-Min", "42010208") == 1
 
     def test_gastronomia_sem_01(self):
@@ -145,6 +158,12 @@ class TestAsignarCalendario:
 
     def test_logistica_sem_01(self):
         assert _asignar_calendario("Tecnolog-Logis", "42040101") == 1
+
+    def test_periodo_sin_calendario_2_todo_es_1(self, monkeypatch):
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_MODA", [])
+        monkeypatch.setattr(transform_notas, "CALENDARIO_2_PROGRAMAS_TURISMO_MARKETING", [])
+        assert _asignar_calendario("Tecnolog-Mod-Inem", "42050101") == 1
+        assert _asignar_calendario("Tecnolog-Turis-Min", "42020101") == 1
 
 
 class TestLimpiarNombreAsignatura:

@@ -1,11 +1,12 @@
 import logging
+from pathlib import Path
 
 import pandas as pd
 import requests
 import time
 
 from .config import BASE_URL, HEADERS, PERIODOS, EXCLUIR_PROGRAMAS
-from .utils import request_with_retry, guardar_parquet
+from .utils import request_with_retry, guardar_parquet, guardar_csv
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,33 @@ def obtener_estudiantes(periodo, limit=5000):
         time.sleep(0.2)
 
     return todos
+
+
+def _actualizar_nivel_en_notas(df_estudiantes):
+
+    ruta = Path("data/raw/notas_pivot.parquet")
+    if not ruta.exists():
+        logger.warning("notas_pivot.parquet no encontrado, se omite actualización de Nombre_nivel")
+        return
+
+    notas = pd.read_parquet(ruta)
+
+    nivel_por_id = (
+        df_estudiantes[["Numero_identificacion", "Nombre_nivel"]]
+        .dropna(subset=["Numero_identificacion"])
+        .drop_duplicates(subset="Numero_identificacion", keep="last")
+        .rename(columns={"Numero_identificacion": "Numero_identificacion_estudiante"})
+    )
+
+    antes = len(notas)
+    if "Nombre_nivel" in notas.columns:
+        notas = notas.drop(columns=["Nombre_nivel"])
+    notas = notas.merge(nivel_por_id, on="Numero_identificacion_estudiante", how="left")
+    assert len(notas) == antes, "El merge de Nombre_nivel no debe alterar el número de filas"
+
+    guardar_parquet(notas, "notas_pivot.parquet")
+    guardar_csv(notas, "notas_pivot.csv")
+    logger.info("Nombre_nivel agregado a notas_pivot desde estudiantes")
 
 
 def ejecutar_extraccion_estudiantes():
@@ -136,5 +164,7 @@ def ejecutar_extraccion_estudiantes():
         logger.warning("No se pudo guardar estudiantes.csv (archivo abierto en otro programa)")
 
     logger.info("Estudiantes guardados: %s registros", len(df))
+
+    _actualizar_nivel_en_notas(df)
 
     return df

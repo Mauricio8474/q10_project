@@ -64,6 +64,9 @@ def consolidar_notas_cursos(df_notas_pivot=None, df_cursos=None, df_estudiantes=
     if df_estudiantes is not None:
         id_col = "Numero_identificacion_estudiante" if "Numero_identificacion_estudiante" in notas.columns else "Numero_identificacion"
         df_est = df_estudiantes.rename(columns={"Numero_identificacion": id_col})
+        cols_duplicadas = [c for c in df_est.columns if c != id_col and c in notas.columns]
+        if cols_duplicadas:
+            notas = notas.drop(columns=cols_duplicadas)
         antes = len(notas)
         notas = notas.merge(df_est, on=id_col, how="left")
         despues = len(notas)

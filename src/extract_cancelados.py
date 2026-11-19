@@ -10,7 +10,7 @@ from .config import (
     PERIODOS,
     PROGRAMAS
 )
-from .utils import request_with_retry
+from .utils import request_with_retry, separar_sede_programa
 
 logger = logging.getLogger(__name__)
 
@@ -98,5 +98,8 @@ def ejecutar_extraccion():
             registros.extend(datos)
 
     df = pd.DataFrame(registros)
+
+    if "Nombre_programa" in df.columns:
+        df["Sede"] = df["Nombre_programa"].apply(lambda x: separar_sede_programa(x)[0])
 
     return df

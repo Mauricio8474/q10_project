@@ -64,6 +64,24 @@ def _clasificar_seguimiento(fecha, grupo):
     return None
 
 
+def agregar_sede_nivel(df, df_estudiantes):
+
+    est = df_estudiantes[["Numero_identificacion", "Sede", "Nombre_nivel"]].drop_duplicates(
+        subset="Numero_identificacion"
+    )
+
+    antes = len(df)
+    df = df.merge(
+        est,
+        left_on="Numero_identificacion_estudiante",
+        right_on="Numero_identificacion",
+        how="left",
+    ).drop(columns=["Numero_identificacion"])
+    assert len(df) == antes, "El merge de Sede/Nombre_nivel no debe alterar el número de filas"
+
+    return df
+
+
 def enriquecer_inasistencias(df_detalle, df_estudiantes):
 
     logger.info("=== ENRIQUECIENDO INASISTENCIAS (grupo + seguimiento) ===")

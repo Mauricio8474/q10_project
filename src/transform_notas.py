@@ -10,7 +10,7 @@ from .config import (
     CALENDARIO_2_SEMESTRE,
     EXCLUIR_PROGRAMAS,
 )
-from .utils import guardar_csv, guardar_parquet
+from .utils import guardar_csv, guardar_parquet, separar_sede_programa
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +77,7 @@ def transformar_notas(df_raw):
         axis=1,
     )
 
+    df_pivot["Sede"] = df_pivot["Nombre_programa"].apply(lambda x: separar_sede_programa(x)[0])
     df_pivot["Grupo"] = df_pivot["Nombre_curso"].apply(_asignar_grupo)
     df_pivot["Calendario"] = df_pivot.apply(
         lambda r: _asignar_calendario(r["Codigo_programa"], r["Codigo_asignatura"]), axis=1

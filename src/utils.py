@@ -103,6 +103,21 @@ def guardar_parquet(df, nombre_archivo):
     logger.info("Parquet guardado en: %s", ruta)
 
 # ---------------------------------------------------
+# SEPARAR SEDE Y PROGRAMA
+# ---------------------------------------------------
+
+def separar_sede_programa(nombre):
+
+    if pd.isna(nombre):
+        return "", ""
+
+    partes = str(nombre).split(" - ")
+    sede = partes[0].strip()
+    programa = partes[-1].strip() if len(partes) > 1 else ""
+
+    return sede, programa
+
+# ---------------------------------------------------
 # LIMPIAR COLUMNAS
 # ---------------------------------------------------
 

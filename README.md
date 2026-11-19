@@ -178,6 +178,8 @@ main.py  (CLI: python main.py [módulo] — disponible: todo, rapido, cursos, ca
 ├── cancelados
 │   ├── GET /matriculas-canceladas (periodo × programa)
 │   ├── GET /estudiantes/{codigo} (edad, género)
+│   ├── Sede = primer segmento de Nombre_programa ("SEDE - JORNADA - PROGRAMA")
+│   │   Nombre_nivel (Semestre) ya viene del API
 │   └── → data/raw/cancelados.{csv,parquet}
 │
 ├── notas
@@ -185,25 +187,28 @@ main.py  (CLI: python main.py [módulo] — disponible: todo, rapido, cursos, ca
 │   ├── GET /evaluaciones/cuantitativo/notas?Consecutivo_curso={id}
 │   ├── transform: extrae primeros 3 parámetros padre, renombra a
 │   │   Primer/Segundo/Tercer Seguimiento, asigna Grupo (A/B/C) del nombre del curso
+│   │   Sede = primer segmento de Nombre_programa ("SEDE - JORNADA - PROGRAMA")
 │   │   asigna Calendario (1/2) según listas de semestre.json (calendario_2.*):
 │   │     periodo 7: ambas listas vacías → todos los programas en Calendario 1
 │   │     (incluye Moda, que en otros periodos puede estar en Calendario 2)
 │   │   Nota final = fillna(0) × [0.3, 0.3, 0.4] (todos)
 │   ├── limpia Nombre_asignatura (quita prefijo "{codigo}-")
 │   ├── filtra estudiantes que aparecen en cancelados (Numero_identificacion)
-│   └── → data/raw/notas_pivot.parquet
+│   └── → data/raw/notas_pivot.parquet (Nombre_nivel se agrega después, ver estudiantes)
 │
 ├── estudiantes
 │   ├── GET /estudiantes?Periodo={id} (con paginación)
 │   ├── merge Grupo + Calendario desde notas_pivot (por Numero_identificacion)
 │   ├── columna Estado (Activo/Cancelado) comparando con cancelados.parquet
+│   ├── reescribe notas_pivot agregando Nombre_nivel (Semestre) por Numero_identificacion
 │   └── → data/raw/estudiantes.{parquet,csv}
 │
 ├── inasistencias
 │   ├── GET /inasistencias?Fecha_inicio={}&Fecha_fin={}
 │   ├── filtra módulos no relevantes (CIES, TecLab)
 │   ├── limpia Nombre_modulo (quita prefijo numérico)
-│   ├── enriquece con Sede, Programa, Semestre, Calendario (1/2), Grupo, Seguimiento
+│   ├── agrega Sede + Nombre_nivel (desde estudiantes.parquet) a agregado y detalle crudos
+│   ├── enriquece (detalle) con Sede, Programa, Semestre, Calendario (1/2), Grupo, Seguimiento
 │   │   Calendario 2 según listas de semestre.json; periodo 7 vacías → todos en Calendario 1
 │   └── → data/raw/inasistencias_{agregado,detalle,enriquecido}.parquet
 │

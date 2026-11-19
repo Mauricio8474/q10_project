@@ -71,7 +71,7 @@ def cmd_notas():
 
 def cmd_inasistencias():
     from src.extract_inasistencias import ejecutar_extraccion_inasistencias
-    from src.analisis_inasistencias import enriquecer_inasistencias
+    from src.analisis_inasistencias import enriquecer_inasistencias, agregar_sede_nivel
 
     df_agregado, df_detalle = ejecutar_extraccion_inasistencias()
     logger.info("Agregado: %s registros", len(df_agregado))
@@ -82,6 +82,14 @@ def cmd_inasistencias():
     except FileNotFoundError:
         logger.warning("estudiantes.parquet no encontrado — saltando enriquecimiento de inasistencias")
         return
+
+    df_agregado_con_sede = agregar_sede_nivel(df_agregado, df_est)
+    guardar_parquet(df_agregado_con_sede, "inasistencias_agregado.parquet")
+    guardar_csv(df_agregado_con_sede, "inasistencias_agregado.csv")
+
+    df_detalle_con_sede = agregar_sede_nivel(df_detalle, df_est)
+    guardar_parquet(df_detalle_con_sede, "inasistencias_detalle.parquet")
+    guardar_csv(df_detalle_con_sede, "inasistencias_detalle.csv")
 
     df_enriquecido = enriquecer_inasistencias(df_detalle, df_est)
     guardar_parquet(df_enriquecido, "inasistencias_enriquecido.parquet")

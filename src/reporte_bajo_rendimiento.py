@@ -62,8 +62,13 @@ def generar_reporte_bajo_rendimiento():
         logger.error("Archivo faltante: %s — ejecute 'python main.py todo' primero", e)
         return {}
 
+    cols_est = ["Numero_identificacion", "Nombre_nivel", "Sede", "Nombre_programa_limpio"]
+    cols_duplicadas = [c for c in cols_est if c != "Numero_identificacion" and c in notas.columns]
+    if cols_duplicadas:
+        notas = notas.drop(columns=cols_duplicadas)
+
     df = notas.merge(
-        est[["Numero_identificacion", "Nombre_nivel", "Sede", "Nombre_programa_limpio"]],
+        est[cols_est],
         left_on="Numero_identificacion_estudiante",
         right_on="Numero_identificacion",
         how="left"
